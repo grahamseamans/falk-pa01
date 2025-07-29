@@ -22,6 +22,7 @@ class VolumeController {
   public:
     void begin(short min, short max);
     void set(int volume);
+    void writeBits(byte bits);
     void loop();
 };
 

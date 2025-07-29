@@ -85,11 +85,33 @@ void applySettingsChanges(const DeviceSettings& oldSettings, const DeviceSetting
   
   // Check for volume changes
   if (oldSettings.volume != newSettings.volume) {
+    // Implement break-before-make relay switching to prevent pops
+    byte oldBits = (byte)(oldSettings.volume & 0x3F);
+    byte newBits = (byte)(newSettings.volume & 0x3F);
+    
+    // Calculate which bits are changing
+    byte bitsToTurnOff = oldBits & ~newBits;  // Was 1, becoming 0
+    
+    // Step 1: Turn off bits that need to turn off (break)
+    if (bitsToTurnOff != 0) {
+      volume.writeBits(oldBits & ~bitsToTurnOff);  // Remove bits turning off
+      delay(5);  // Brief delay to let relays settle
+    }
+    
+    byte bitsToTurnOn = ~oldBits & newBits;   // Was 0, becoming 1
+    
+    // Step 2: Turn on bits that need to turn on (make)
+    if (bitsToTurnOn != 0) {
+      volume.writeBits(newBits);  // Write final target pattern
+    }
+    
+    // Step 3: Final sync to prevent drift
     volume.set(newSettings.volume);
+    
     needsDisplayUpdate = true;
     needsFlashSave = true;
-    Serial.print("Volume changed to: ");
-    Serial.println(newSettings.volume);
+    Serial.printf("Volume changed: %d->%d (0x%02X->0x%02X)\n", 
+                  oldSettings.volume, newSettings.volume, oldBits, newBits);
   }
   
   // Check for input changes  
@@ -105,10 +127,11 @@ void applySettingsChanges(const DeviceSettings& oldSettings, const DeviceSetting
   if (oldSettings.muted != newSettings.muted) {
     if (newSettings.muted) {
       volEnc.pauseCount();
+      volume.writeBits(0x00);  // Mute by turning off all volume relays
       Serial.println("Muted");
     } else {
       volEnc.resumeCount();
-      volume.set(newSettings.volume);  // Restore actual volume
+      volume.writeBits(newSettings.volume & 0x3F);  // Restore actual volume
       Serial.println("Unmuted");
     }
     needsDisplayUpdate = true;

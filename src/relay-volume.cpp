@@ -59,6 +59,14 @@ void VolumeController::endPulse() {
   VolumeRelayPulseTime = 0;
 }
 
+void VolumeController::writeBits(byte bits) {
+  // Write the specified bit pattern to the volume relays
+  Wire.beginTransmission(MCP_VOLUME_ADDRESS);
+  Wire.write(MCP_PORTB_PINS);
+  Wire.write(bits & 0x3F);  // Mask to 6 bits
+  Wire.endTransmission();
+}
+
 void VolumeController::loop() {
   int m = millis();
   VolumeController::volEncLoop(m);
