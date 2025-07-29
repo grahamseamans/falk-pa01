@@ -1,5 +1,10 @@
 #include "wifi-manager.h"
 #include "falk-pre-conf.h"
+#include "web_files.h"
+#include "relay-volume.h"
+
+// External references to main.cpp globals
+extern VolumeController volume;
 
 #include <Preferences.h>
 Preferences pref;
@@ -208,10 +213,7 @@ void extendTimeout() {
 }
 
 void loadServer() {
-  if(!SPIFFS.begin(true)) {
-    Serial.println("An Error has occurred while mounting SPIFFS");
-    return;
-  }
+  // No longer need SPIFFS for web files - using embedded files
 
   // API CONTENT
   server.on("/api/status", HTTP_GET, [&](AsyncWebServerRequest *request){
@@ -268,7 +270,12 @@ void loadServer() {
     int vol = sysSettings.volume;
     if (doc.containsKey("volume")) {
       vol = doc["volume"].as<int>();
-      volEnc.setCount(vol);
+      Serial.print("Web API: Setting volume to ");
+      Serial.println(vol);
+      // Set volume directly - no encoder manipulation needed
+      setVolume(vol);
+      Serial.print("Web API: Volume set, sysSettings.volume is now ");
+      Serial.println(sysSettings.volume);
     }
     // create a JSON object for the response
     doc.clear();
@@ -425,9 +432,7 @@ void loadServer() {
         sysSettings.maxVol = v;
         success = true;
         if (sysSettings.volume > v) {
-          sysSettings.volume = v;
-          volEnc.count = v;
-          //display.updateScreen();
+          setVolume(v);  // Use proper volume setting function
         }
       } else {
         message = "invalid: value";
@@ -581,7 +586,38 @@ void loadServer() {
 
   server.addHandler(&events);
 
-  server.serveStatic("/", SPIFFS, "/www/").setCacheControl("max-age=86400").setDefaultFile("index.html");
+  // Serve embedded web files
+  server.onNotFound([](AsyncWebServerRequest *request) {
+    extendTimeout();
+    
+    String path = request->url();
+    if (path == "/") {
+      path = "/index.html";
+    }
+    
+    // Find the file in embedded files
+    for (size_t i = 0; i < web_files_count; i++) {
+      if (String(web_files[i].path) == path) {
+        AsyncWebServerResponse *response = request->beginResponse(
+          200, 
+          web_files[i].mime_type, 
+          web_files[i].data, 
+          web_files[i].size
+        );
+        
+        if (web_files[i].gzipped) {
+          response->addHeader("Content-Encoding", "gzip");
+        }
+        response->addHeader("Cache-Control", "max-age=86400");
+        
+        request->send(response);
+        return;
+      }
+    }
+    
+    // File not found
+    request->send(404, "text/plain", "File not found");
+  });
 
   server.begin();
 }

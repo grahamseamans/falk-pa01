@@ -89,4 +89,5 @@ extern ESP32Encoder inpEnc;
 
 void saveSettings();
 void restoreSettings();
+void setVolume(int newVol);
 #endif

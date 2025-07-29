@@ -1,0 +1,25 @@
+how about the firmware stuff? is that in here too? what about how we send out i2c? what if I want to use a different type of relay volume setup? I think that what I want to use works slightly differently than what the mcu is currently mean to send out. 
+
+it uses the same i2c io expander, but the actual pattern per volume level mgiht be different
+
+okay yea
+
+there are because it uses latching relays
+
+iirc it's still basically a binary number, but I guess I just send out port a?
+
+check out the relaxid passive txt file
+
+it uses gpb0 - gpb5 for the volume
+
+these are non latching relays, so we need to just keep them pinned on 
+
+I'm realizing tha tmaybe latching isn't such a bad idea for next time
+
+but you get the picture
+
+we only have 6 bits (less volume steps)
+
+still basically binary though, but 6 bit binary volume
+
+I dont know if 0 or 5 is the msb, I guess we'll just have to try both

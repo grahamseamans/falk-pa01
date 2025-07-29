@@ -1,0 +1,626 @@
+RelaiXed Passive
+User Manual
+Revision 2017-1-3
+Jos van Eijndhoven
+
+
+
+
+
+
+Recent updates to this manual:
+2017/01/03: Inserted diagram and text for inter-module and cabinet  wiring
+2016/12/17: Inserted extra text for a 10Kohm attenuator, and adjusting the output resistors
+2016/12/03: Update for 2016-09 version of PCB with extra transformer option
+2016/09/12: Added section on driving an OLED character display
+2016/08/21: First published version
+
+
+
+
+
+
+
+The design of this preamp is protected under copyright, 2016. It is freely available for DIY home and hobby use. It is not allowed to use (parts of) the design for commercial use without explicit permission of the author
+Contents
+Introduction
+Technical info and specifications
+The resistor attenuator
+Collecting Components
+The 5V power supply
+7-segment displays
+Assembly
+Soldering instructions and tools
+Assembly order
+Assembly - detailed instructions
+Mounting the 0805 resistors and capacitors
+Mounting the choke and the crystal
+Mounting the LED and diodes
+Mounting the micro-USB connector
+Mounting the 7-segment LED displays and the IR receiver
+Wiring the rotary switch
+Mount the relay driver ICs
+Mounting the MELF resistors
+Mounting the tiny SMD relays
+Mounting the jumpers
+Mounting the elco’s
+Mounting the power supply and connectors
+Test 1: controller board
+Test 2: system power up
+Test 3: attenuator chain
+Adding an OLED character display
+Module wiring in cabinet
+Operating instructions
+Using the rotary switch
+Using the IR control
+Restricting IR device target
+Upgrading to a new software revision
+Installing the PC-based Relaixed interface application
+Updating your microcontroller
+Deadlock during ‘Verify’
+Deadlock during ‘Programming’
+Failsafe bootloader access
+Programming an empty microcontroller
+Introduction
+The ‘RelaiXed Passive’ is an audio pre-amplifier, without active components in the audio signal path. It targets high-end audio enthousiasts, for DIY (Do-It-Yourself) amplifier projects. It aims at integration/combination with some other power-amplifier modules so that together a complete audio amplifier is created. For this purpose, this Relaixed passive provides:
+Audio volume control for a stereo analog audio signal. Volume control is in 64 steps of about 1dB difference, and a ‘mute’ (silent) state.
+Audio signal input selection, one out of four stereo inputs.
+Power-up and power-down (to standby mode) for this attenuator itself and the attached power amplifier. Power-up is provides a 2-step soft-start mode, to reduce the peak charging current of the power-amplifier power-supply capacitors, reduce the inrush-current of the power-amp transformers, and thereby increase the life-span of your amplifier.
+Control over the volume, input-select, and power-switch through a single rotary knob as well as through an IR remote control.
+A two-digit 7-segment display that shows the state of the pre-amplifier, with volume, standby-indication, and (during switching) the input selection. Typical display colors are red or blue. In my personal opinion, the red display is easier on the eyes and offers a nice retro style.
+Public available sources of the software that is embedded in the microcontroller. A USB port is provided for easy updates of this firmware if need would arise.
+
+The audio volume control through a set of relays and fixed resistors provides a top-quality signal pass, far better than can be obtained with a conventional sliding potentiometer, even in comparison with ‘high-end’ audio potentiometers as for instance from Alps. Both sliding potentiometers and the rotary switching potentiometers (with many contacts and small resistors) tend to reduce in quality over their lifetime due to wear and dirt on the contacts. In contrast, the tiny relays used this design are professional quality hermetically sealed relays, which guarantee a high-quality contact over a virtually unlimited lifetime.
+The use of only good-quality relay contacts and resistors in the audio path prevents any non-linear distortion, and prevents the non-linear (parasitic) capacitances that are typical of all semiconductors (transistors, fets, opamps). This makes this design suitable for high-end audio applications, but cannot be a cheap solution. The mechanical clicking of the tiny relays will be audible on turning the volume. If you don’t want that, this is probably not your solution.
+
+This design handles cinch/RCA stereo signals: a left and right audio signal relative to a (common) ground signal. This is also referred to as ‘single-ended’ signalling. This is opposed to ‘differential’ or ‘balanced’ signalling, typically connected through 3-pin XLR plugs,  as is provided by my Relaixed preamplifiers. This latter (‘balanced’) scheme reduces the pick-up of unwanted (stray, parasitic) signals, and thereby might achieve a cleaner audio path, at the cost of doubling audio signal processing and wiring. Due to this single-ended wiring and the relatively high output resistance of any passive volume control, I recommend to use this attenuator integrated in a chassis with (or very close by) your power amplifier, and avoid long wiring to the power amplifier. Also, you should note that this design does NOT offer left-right balance control, which is provided by the balanced Relaixed preamplifiers.
+
+As can be seen on the cover photo, the PCBs separate a small front control PCB from the main relay and power-supply PCB. The front unit is intended to be mounted in your front panel, where the display is visible and the IR receiver can pick-up its remote control signals. The 4x2 cinch (RCA) connector on the main PCB can then be mounted against your amplifier back panel. Optionally, if you don’t trust the power-supply components and (kilowatt?) power-switching so close to your precious audio signals, you can partition the main PCB again in two halves: one with the audio selection and attenuation, and the other with the power-supply and power switching. To support such further partitioning, the main PCB does already provide a cut-mark and partial cut, as well as extra mounting holes for the separated parts. After partitioning, you need to provide 4 wires between the power-supply and the audio sections.
+
+A few users of this Relaixed Passive attenuator adopt the design for multi-channel volume control. For multi-channel operation, you can connect several relay-PCBs to a single front control module. With 3 relay boards, you obtain a 6-channel volume controller. All the relay-boards will follow the single control unit in lock-step operation. In principle, through software extensions, the separate relay-boards could be driven differently (independent of each other), and allow something like balance control, but such software updates have not yet been made.
+
+History: This design is a successor of my original relay attenuator, first published in June 2006. After a few tiny updates, this design was transferred to Tentlabs in 2009, because its popularity was beyond what I could manage as my hobby. The current design has a fully renewed digital control, now very compatible with the Relaixed active-preamplifier designs, and has added the power-switch functionality and the USB firmware update capability.
+Technical info and specifications
+Output connectivity:		One analog stereo output through a 4-pin screw connector.
+				An optional extra connector to the audio just after input selection
+Input connectivity:		4 stereo inputs, through one 4x2 RCA block.
+Optionally, omit this block and wire your own RCA connectors.	
+Input impedance:		Standard configuration: 27Kohm. Optionally 10Kohm.
+Output impedance:		0 to 13Kohm, varies with volume selection. Optionally 0-4.5Kohm.
+Volume control:		64 levels, with steps of nominal 0.95dB, obtaining 60dB range
+				One additional ‘mute’ state which disconnects all inputs.
+Frequency bandwidth:		DC to 150 kHz (-3dB) at 10dB attenuation
+L/R channel isolation:		96dB at 1 kHz and 10dB attenuation
+Input select isolation:		123dB at 1kHz and 10dB attenuation
+Power consumption:		standby mode <0.1 Watt, max on power <2 Watt.
+Switched power output:	max. 16A x 250Vac
+Absorb energy shock		max 1000 Joules (soft power-on from room temperature)
+
+Depending on your power amplifier, a 60dB volume range spans for instance an output power from 0.1mWatt to 100Watt.
+
+The source-code of the project is made available as open-source. The code (svn-)repository is available at: http://sourceforge.net/projects/relaixed2/
+
+The resistor attenuator
+The actual audio attenuation is created through a set of resistors and relay switches. In the standard design, this creates a 27KOhm input resistance, and an output resistance which varies between 0 and 13KOhm depending on the selected volume. Note that with a classic “contact sliding over resistive layer” type of analog rotary potentiometer you would also have a constant input resistance and a variable output resistance.
+By selecting alternative values for the resistors, you can create your attenuator with a higher or lower input/output resistance value. Choosing the resistance value entails a compromise:
+A higher resistance value could be easier to drive by the other equipment in your audio that provide the audio signal, such as your CD player, vinyl record player, …
+A lower output resistance provides an improved driving capability to the inputs of your power amplifer, makes the signal less sensitive for interlink cables between the attenuator and the power amplifier, and provides a higher bandwidth and lower noise level.
+So, a lower value is preferrable, as long as it is well drivable by your source equipment. The default 27KOhm is safe to use in about all circumstances. If you want to push towards best possible audio quality, I would recommend a lower resistance attenuator. In principle, you can make any choice, through the help of my online attenuator calculator.
+For your convenience, here is a table of resistor values for the default 27KOhm attenuator and an optional 10KOhm attenuator:
+
+Resistors in schematic
+27Kohm Attenuator
+Individual values
+10KOhm Attenuator
+Individual values
+R203, R216
+0
+0
+R202, R215
+2.7K
+1.0K
+R204, R217
+220K
+82K
+R205, R218
+5.6K
+1.8K
+R206, R219
+100K
+39K
+R207, R220
+10K
+3.3K
+R208, R221
+47K
+18K
+R209, R222
+15K
+5.6K
+R210, R223
+18K
+6.8K
+R211, R224
+22K
+8.2K
+R212, R225
+5.6K
+2.2K
+R213, R226
+27K
+10K
+R214, R227
+820
+330
+R215, R228
+27K
+10K
+
+
+The output resistance of the 10K attenuator ranges between 0 and 4.5Kohm. When integrating the attenuator with a particular power amplifier, it might be good to adjust the last (output) resistor in the chain (R215 and R228) to compensate for the input resistance of your power amplifier. That can ensure a more consistent step-size of 1dB per step of the attenuator. Adjusting this pair of resistors is to achieve that the adjusted value in parallel with the power-amp input resistance approximates the target value in above table. The adjusted value of R215, R228 can be seen in the table below:
+
+Input resistance
+of your power amp
+Adjusted R215, R228
+for a 27K attenuator
+Adjusted R215, R228
+for a 10K attenuator
+Infinite high
+27K
+10K
+220K
+33K
+10K
+100K
+39K
+12K
+47K
+68K
+12K
+
+
+Of course, next to adjusting the value of these two resistors, an alternative might be to remove the input resistor (to ground) in the power amplifier.
+Collecting Components
+This Relaixed Passive design is -for now- offered in three versions:
+Fully assembled and tested module
+For this version, you obviously don’t need to bother at buying the appropriate components.
+Only the (many, tiny) SMD components are pre-mounted.
+You need to acquire yourself a hand-full of components with the conventional ‘through hole’ mounting. As mentioned on the web-page, this list is available on-line at Octoparts. Buying these components provides you with some freedom in finishing the design, by adjusting this standard list of components. You might think about:
+Choose another display color. Next to the regular red or blue, you might be able to find and select green, orange, or white displays.
+Mount only a subset of the components and thereby save some cost. In particular, you might remove the (soft-start) power switch functionality, which saves you the two relays, the two large power resistors, and one of the fuses.
+Additionally, you might drop the IRM-05 power module (and everything from the power-supply part of the PCB) if you have some other +5V supply voltage available.
+You might omit the 4x2 RCA input connector block. This block provides average connector quality, and you might prefer more high-end audio connectors that are mounted individually in the back-panel, such as for instance such as the well-known Neutrik REAN NYS367 series.
+The bare PCBs, only provided with the preprogrammed PIC18F25J50-I/SO microcontroller. This microcontroller contains the software (firmware) specific for my Relaixed designs. So, buying an ‘empty’ microcontroller from the shop and soldering that in, will not render you a working system. Although I make the required firmware freely available, an empty microcontroller can only be programmed through a dedicated programmer device. In practice, for this RelaiXed Passive design, I adopt an ’in-circuit programming’ mode, which uses a few more SMD components pre-soldered on the board then just the PIC microcontroller. Note that after the initial version of the firmware has been installed in the microcontroller, later updates can be inserted through its USB interface. This is described later in this manual.
+
+The 5V power supply
+The 2016-09-01 version of the PCB provides a choice for one of two DC powersupply modules to mount: the Mean Well IRM-03-5 or the IRM-05-5. The smaller 3 Watt ‘IRM-03-5’ is the default: it is somewhat smaller/lighter/cheaper than its 5 Watt ‘IRM-05-5’ brother. However, it is also brand-new and seems not yet widely available. So you can regard the ‘IRM-05-5’ (used in the earlier version of this PCB) as a good fall-back option.
+
+7-segment displays
+7-segment displays are produced in different sizes, in two distinct types (common cathode versus common anode), different colors (red, green, yellow, orange, blue, white), and -with all other things equal- still in different pin orderings. It is safe to choose any KingBright SA39-11 variation, which gives you a choice of colors in the same type (common anode), size (10mm characters), and pinout. When you prefer some other type, make sure you carefully check the pinout!
+Assembly
+This renewed RelaiXed Passive was designed to allow automated (factory) assembly, but still keep DIY assembly with manual soldering feasible. The use of very small SMD components was (mostly) avoided, applying components typically not smaller than ‘0805’ footprint resistors and capacitors (2.0 x 1.25 mm), and ICs in a SOIC package (a pin pitch not smaller than 1.25mm). Although this might seem small to you, these are still good to handle manually, and actually can be mounted faster than traditional through-hole components. However, altogether, the manual assembly should not be taken lightly, and does require some soldering experience.
+
+Unfortunately, the (only) exception on easy-to-mount components is the micro-USB connector. It uses pins with smaller pitch (0.65mm), which are furthermore inconveniently located under the package. In fact, soldering this connector does require use of a hot-air soldering gun, instead of a regular (fine point) soldering iron. To avoid this extra challenge, you could either simply never mount and use the USB, or request this micro-USB connector to be premounted. The main use of the USB is for later upgrading the firmware in the controller. In practice, the software is already very stable and you might never have this need.
+
+Determine whether you want to mount the main PCB in one piece, or want to partition it into two PCBs separating the audio from the power-supply and power-switching. In the latter case, cut the PCB with a fine saw. Please do this before you start soldering components on this PCB!
+Soldering instructions and tools
+For this kind of PCB assembly, you should use thin soldering wire like 0.5 to 0.7 mm diameter, with rosin flux core. Traditional solder wire has a tin-lead (Sn/Pb) metal mixture with about 40% lead. This the easiest type to work with. For environmental reasons, lead is currently being avoided for soldering, and not to be applied anymore in professional environments. Among the several more recent alternatives, a beautiful alternative is the tin-copper-silver mixture. The (typically 3%) silver content is by some audio enthusiasts appraised for giving better sounding results. As all lead-free types, this has a somewhat higher melting temperature, making it less easy to work with. Also, this type of solder cools down to a grayish appearance, not so shiny.
+
+You use a soldering iron with a tiny (small diameter) soldering tip. The soldering devices with explicit temperature indication and control are comfortable to work with. If you have such: I mostly use a 320 degrees celsius temperature setting.
+
+You will need a tweezers to pick and place the SMD components while soldering:
+
+
+If you would have applied excess solder that causes a bridge (short-circuit) between neighbouring pins of an IC, don’t worry. You can easily remove the excess solder with braid solder remover wick:
+
+
+If -as for myself- your eyes are not so young anymore, you would also benefit from a pair of stronger eye-glasses that provide an enlarged close-up view of what you are doing. You can use a cheap pair of extra-strong conventional reading glasses, or a more dedicated head-mount magnifier set that can be used over your regular glasses:
+.
+
+Assembly order
+Although the order of assembling is not very critical, my advice would be:
+In general I recommend to solder the smallest components first, that means you start with all the ‘0805’ little resistors and capacitors.
+Add the slightly larger 2-pin SMD components: the Xtal on the controller board, the choke L301, the diodes and LEDs. Note that the diodes and LEDs have a polarity, and should not be reversed. Also add the 3-pin transistors (Q401, Q402) and voltage regulator U401.
+If the microcontroller (U401) and the USB connector (P401) were not pre-mounted, you can add them now. At this stage, the USB interface should be operational: if you connect just the front-PCB through USB with your PC, a valid USB device should be recognized. See further below in this manual about USB communication.
+You can now complete the front controller PCB with the 7-segment LED displays, the IR receiver, and wiring to the rotary switch. The controller is now fully operational when powered through a USB cable. See below on further description about the switch and the displays!
+On the main relay board, mount the SOIC ICs U303 and U304. Note their polarity: don’t mount them in reverse orientation!! See the photo.
+Mount the larger SMD capacitors C302 and C303. Note their polarity, indicated by the shape-drawing on the PCB.
+Mount the ‘MELF’ audio resistors R201 to R228
+Mount the little relays K207 to K216
+
+At this point, all SMD components are mounted, the power supply section is still mostly empty.
+Mount the through-hole components in order of increasing height. That allows easier soldering if you lie the PCB upside down on your table.
+Assembly - detailed instructions
+Some further instructions, listed in above order, trying to help you to avoid mistakes…
+Mounting the 0805 resistors and capacitors
+Probably superfluous,  just to remind you on a proper SMD mounting procedure for these resistors and capacitors (and also holds for all subsequent components such as the multi-pin ICs): 
+You proceed in 4 steps:
+You apply a little bump of solder on one of the PCB terminals of each device. You apply this rather quick, so that most of the rosin flux is still in there and not smoked out yet:
+You place and fix the component with a pair of tweezers and your soldering iron. You do not need to simultaneously apply the soldering wire. Make sure that the component is accurately aligned, and rests flat down on the PCB:
+
+With the component now fixed in place, you can easily solder its other terminals. You keep your soldering wire at the terminal and then melt and retract it, to get a shiny soldering joint.
+
+Optionally, you re-do the first terminal if it doesn’t look nice.
+
+If you melt the solder on the tip of your soldering-iron, and wait a few seconds before applying it to the pad and component, it will not attach nicely. If you do a faster soldering job, you get a better result, and reduce the risk of overheating your components.
+
+Note also that my preferred type/brand of small resistors has tiny text that shows the resistance value. This is very convenient for visual checking that you did not make errors in the component mounting. In above photo, the resistors are marked with “4701”. The three leading digits (“470”) indicate a base value. The fourth digit provides a power-of-ten multiplier, or in other words, the number of zeros to append to this base value. So “1” says to append a single zero. The “4701” indicator thus translates into a resistance of 4700 ohms. An indicator of “1002” translates into 10000 ohms, which is 10 Kohm.
+
+Unfortunately, the capacitors (light brown in above photo) do not have such annotation: you just need to avoid mistakes during mounting.
+Mounting the choke and the crystal
+These are both 2-pin devices, where the pins are equivalent: there is no mounting orientation.
+Both of them have their main mounting pad underneath, but you can still easily solder them from the side: just make sure that the solder is hot enough to flow on (and under) the device. Although the choke can be safely turned 180 degrees (reversed), you should NOT turn it by 90 degrees: its stretched terminals should match the PCB pattern:
+   
+
+
+Mounting the LED and diodes
+The LED and diodes do have a orientation: you must mount them in the only correct way. Below are two photos from different builds:
+
+
+The diode D301 is not really necessary, it can easily be replaced by a wire bridge. Mounting the diode causes that the relays cannot be powered from the USB connector.
+The LED D302 is the hardest component to decide on its orientation. As you see in above pictures, its tiny green dots are at different sides, depending on its type. The right example is the LED type from the standard component list, at the time of writing this. You should better check the polarity of the LED before mounting: This is done with a standard multi-meter, at the ‘diode’ (or otherwise resistor) measurement mode. The LED should slightly light up if you measure it with the black (ground) on the top, and the red (hot) measurement wire at the bottom terminal when oriented according to above photo.
+
+Below is a photo of the diode D401 with its orientation on the front PCB. As standard for diodes, the alignment is indicated with the horizontal bar on the diode. This diode is only to support the USB interface.
+
+Mounting the micro-USB connector
+As mentioned before, the micro-USB connector is hard to mount because of its tiny pitch between its pins (0.65 mm) and that these pins are mostly under the component. Typically, you would need a hot-air soldering device to mount this one:
+
+
+After mounting this tiny connector you should definitely verify its connectivity with a multi-meter: a] the 4 signal wires in the USB connect to the PCB traces, and b] there are no short-cuts between neighbouring pins and between either pin and the surrounding case (ground).
+As mentioned earlier, you might want to skip mounting and using this connector, as it is only used for upgrading the firmware in the microcontroller, or ask someone else (me?) to do the mounting for you. --- Update: as service for the first series, this connector will always be premounted for you, together with the PIC microcontroller! ---
+Mounting the 7-segment LED displays and the IR receiver
+These components are mounted at the back side of the controller PCB:
+
+Please note the location of the decimal ‘dot’ on these displays!! They indicate the bottom side of the digits. It is very confusing that the annotated text on the PCB is upside down. (Which is due to bad stubbornness of my PCB drawing program.)
+Wiring the rotary switch
+The rotary switch provides several functions: turning adjusts the volume, a push-release click increments the chosen input channel (1 to 4 with wrap-around), push-and-rotate is used for left-right balance control (but this function is not available in a standard single-board attenuator),  push and keep pressed still for a few seconds switches the device off (to stand-by mode). However, you can use your attenuator also without this switch, and operate it purely from an IR remote control.
+The rotary switch is wired with 4 wires to the controller board, connector P404:
+
+The switch has 5 pins: one side with 2 pins for its switch, and the other side with 3 pins for its rotary contacts. First you can connect 2 pins on either side for a shared ground, and then you connect the 4 wires as:
+
+
+Mount the relay driver ICs
+Just as reminder: also these ICs are mounted by first applying a solder bump on on pad on the PCB (typically a pad on the corner which is easy accessible), then you place the IC while heating this pad and thus soldering this one pin, then (with the IC nicely fixed in place) you solder the other pins. When excess solder would create a short between two pins, you first just continue to solder all its pins. Then you remove the excess solder by reheating the connected pins through the end of a braided solder wick strip.
+Note carefully the orientation of these ICs!
+
+
+Mounting the MELF resistors
+Note that all resistors have colored rings that indicate their value. The relation between resistor value and ring colors is explained on e.g. http://en.wikipedia.org/wiki/Electronic_color_code. The slightly wider 5th brown ring, bottom-side in the photo below, indicates a 1% tolerance on the resistor value.
+
+
+Mounting the tiny SMD relays
+Comment not really needed...  Note that we selected by purpose a relay type with a non-homogeneous pin distance, so that you cannot mount these in the wrong orientation :-)
+
+Mounting the jumpers
+The relay board contains two jumpers to set an i2c bus identification address of the board, which allows to distinguish boards if you connect two or more relay boards to a single controller. You should set the default jumper position (connect to ground). Forgetting these jumpers is a relatively frequent mistake!
+
+Only if you attach a second relay board to the controller, you can set the jumpers on that second board as:
+
+
+Mounting the elco’s
+Capacitors C302 and C303 do have a + and - side. Note the orientation on the board as drawn by their shape:
+
+
+Mounting the power supply and connectors
+For mounting the larger through-hole components on the power-supply part of the PCB, you typically follow an order with the lowest height components first. That allows you to simply lie the board up-side-down on your table to do the soldering of the pins from the bottom side.
+
+
+
+You can insert a fuse in each of the two holders, and cover them with the optional transparant lid that appears separately on the component list. Typically this is 250mA in F1 (for the attenuator power supply itself), and 8A in F2 (for  the power output to connect your power amplifier or things like that). Obviously, you can choose a suitable F2 strength that fits you own setting, e.g. in the range of 4A to 16A. In this power section, the two large resistors, the capacitor, the varistor, and the fuses have no orientation, and can be mounted either way. The two black relays and the IRM power supply, do have an orientation, but their pins only allow one orientation in the board.
+For the connectors, check that their open (wire) side is at the side of the board edge. Clearly, the green connector P2 in the right-bottom corner on above photo is where your audio comes out. The other green connector P305 must be wired to the controller board.
+
+
+
+Test 1: controller board
+Connect just the controller board with a micro-usb cable to some USB power adapter. The relay-board is not (yet) connected.
+The 7-segment display should light-up
+If you have connected a rotary switch, it should work: turning adjusts the volume, clicking increments the input channel. As the controller does not see any type of relay board, it probably shows as if you can select among 6 audio inputs.
+If you already have a compatible IR remote control at hand, that should work as well. However, you can also wait for a later chapter in this manual to learn what ‘compatible’ means…
+
+If you connect the USB cable not to a power adapter but to a (Microsoft Windows) PC, the above check would be the same.
+Additionally, you can see that Windows recognizes the controller as a generic HID device by loading a suitable device driver. So, if you look into the “Control Panel”, “Devices and Printers”, you can see there a “RELAIXED2” device :-), which denotes that the USB low-level protocol communication is up and running.
+
+To actually communicate between this RelaiXed display PCB and your PC, a dedicated Windows application program was made. This application can be downloaded through the project website. You don’t need this application for normal Relaixed operation. However, if you would (later) like to update the software (firmware) of the PIC microcontroller, you can use this application program to upload the new version in the PIC: see a later chapter in this manual how to do that. For more technical information on the software developed for this RelaiXed project, you can check the software manual, available separately through the website.
+Test 2: system power up
+You can connect primary AC power (in the range of 100Vac to 240Vac) to the power-supply on the main board. Apply this to the two pins marked as ‘in’ on the board, connector P301.
+Maybe for the first time start doing this without the front controller board connected.
+Providing power will cause only the LED to light up. You will (should) not hear anything, such as any relay activity.
+If the LED does not light up (or also if it does), check with a multimeter if you have a 5Vdc power on the board. This is easy accessible on pins 1 and 2 of P302 (the connection between the two parts of the main board).
+If you do have 5V but no light on the LED, then the LED is almost certainly mounted in the wrong orientation. Probably you can check that there is nearly 5V voltage across the LED. Otherwise, maybe, your resistor R309 is not properly mounted?
+Now take off the primary power, connect the controller board through its 4-wire i2c interconnect, and attach again your primary power.
+The system should be fully operational: the 7-segment display lights up.
+If you turn the rotary switch, you can hear the relays click at every volume change.
+If you hold the rotary switch pressed, the system should switch-off. That leaves only one “decimal point” light-up on the display, indicating stand-by. If you shortly click the rotary switch again, the system powers up again. You also hear this by the switching of the large relays on the power-supply section.
+If you click the rotary switch a few times, you select the audio inputs 1, 2, 3, 4, and then 1 again. So, now the controller-board recognizes that this relaixed-passive supports 4 input channels.
+Test 3: attenuator chain
+If you want to test appropriate mounting of all audio (MELF) resistor values, you can verify the attenuation with a 5Vdc test voltage. Wire somehow the +5Vdc power-supply voltage (and ints ground) to the attenuator audio input. You can then measure the (dc) output voltage of the attenuator. This should show values roughly according to an ideal logarithmic behavior which is listed in the table below.
+Vol
+voltage
+Vol
+voltage
+Vol
+voltage
+Vol
+voltage
+64
+5.00
+48
+0.87
+32
+0.151
+16
+0.026
+63
+4.48
+47
+0.78
+31
+0.135
+15
+0.024
+62
+4.02
+46
+0.70
+30
+0.121
+14
+0.021
+61
+3.60
+45
+0.63
+29
+0.109
+13
+0.019
+60
+3.23
+44
+0.56
+28
+0.097
+12
+0.017
+59
+2.89
+43
+0.50
+27
+0.087
+11
+0.015
+58
+2.59
+42
+0.45
+26
+0.078
+10
+0.014
+57
+2.33
+41
+0.40
+25
+0.070
+9
+0.012
+56
+2.08
+40
+0.36
+24
+0.063
+8
+0.011
+55
+1.87
+39
+0.32
+23
+0.056
+7
+0.010
+54
+1.67
+38
+0.29
+22
+0.051
+6
+0.009
+53
+1.50
+37
+0.26
+21
+0.045
+5
+0.008
+52
+1.35
+36
+0.23
+20
+0.041
+4
+0.007
+51
+1.21
+35
+0.21
+19
+0.036
+3
+0.006
+50
+1.08
+34
+0.19
+18
+0.033
+2
+0.006
+49
+0.97
+33
+0.17
+17
+0.029
+1
+0.005
+
+
+The above table shows the logarithmic nature of the volume control: every step the voltage reduces with 0.95dB, which is approximately 11%. The actual reduction per step can be slightly larger or smaller due to rounding of  ideal resistance values to the standard E12 series.
+Note that if you have done the measurement from ‘64’ down to ‘32’, the further lower values cannot be wrong anymore…
+
+Adding an OLED character display
+
+Rather a long time time ago, I had started with another display, as alternative to the 2-digit 7-segment display that is present on the front controller PCB.
+I made a choice for this 2x16 character OLED display sold here:
+http://www.ebay.com/...I2C-1602-16x2-OLED-Module
+Reasons for choosing this display are:
+OLED displays have a marvellous contrast.
+The white-on-black text is nice for its bare-bones simplicity and readability
+Its i2c serial interface connects easily to the Relaixed controller.
+Although an early version for software-support of this display was made more than a year ago, the results were not offered because the communication to this display appeared to be unreliable. With some new effort, this got resolved now, and an extra software update to drive this display was released. You would need to upgrade the firmware in your PIC controller to (at least) the release of 2016-09-10, or svn83. You can download this release as ‘RelaixedApp-20160910.hex’ from the project sourceforge site. This release will work with either one of the displays alone, or with both displays together.
+
+On the RelaixedSMD preamplifier, or when you use two Relaixed-Passive relay boards on a single controller, the left-right balance control is also indicated in the display: on the location where the upper photo shows ‘muted’.
+
+This display is simply connected in parallel on the 4-wire i2c bus:
+ 
+
+
+To obtain a reliable display operation, it seems required to add a few components to the display interface. I added on the back of the display connector:
+A 10uF capacitor between its VCC and GND (same type as used elsewhere in the RelaixedPassive)
+Two 100pF capacitors, one on each of the i2c clock and data lines (SCL and SDA), with their other pin to Gnd.
+Two 470ohm resistors, in series with the clock and data lines.
+
+This was the original backside of the display:
+
+
+This is how it looks after my extra components and 4-wire bus connections:
+
+Note the three small (0805) capacitors that are mounted horizontally across the solder terminals: from left-to-right first the two 100pF caps, then the 10uF cap. Obviously, you might create a different layout.
+
+Module wiring in cabinet
+
+This module wiring picture deserves several comments:
+The RelaixedPassive audio output is on a 4-terminal side connector, with signals as in above picture (blue, black, black, red) denoting (audio-left, audio-ground, audio-ground, audio-right). I guess that for internal wiring it would typically be fine to use plain wires, where you twist together a signal wire with its ground wire. Alternatively, you can use audio shielded wiring.
+The picture does not show any additional fuses, (power-)switches, or rush-in NTC resistors, beyond what is supplied as the RelaixedPassive: indeed you do not need anything extra. Fuses for the powerlines are on the relaixed board. The single control knob can be pressed (clicked) to switch your amplifier on/off, or you can use an IR remote controller for that. NTC resistors to limit the rush-in current of large transformers are replaced by the RelaixedPassive power resistors.
+You can either use a (IEC) net-entry with built-in filter (as above picture suggests) or a plain unfiltered net-entry connector. Using a net-entry filter can help to obtain a clean primary voltage and keep high-frequency rubbish out of your audio cabinet. High-frequency rubbish is abundant on today’s net voltage due to light dimmers, ethernet-over-powerline adapters, and switch-mode power-supplies in computer equipment and LED lighting. If you decide to use a net entry filter, please DO NOT USE a regular/industrial type, but select a type that is certified for MEDICAL application. Standard industrial types contain a leakage capacitor from primary power to ground, which tends to inject current with 50 (or 60) Hz hum into your audio ground/shield/chassis. You do not want that in high-end audio! Medical approved types don’t have that. Choose for example a product like the TDK B84771M series. To strengthen the effect of the filter, or do some filtering in case you select an unfiltered entry connector, the RelaixedPassive does add an extra filtering capacitor between the primary power lines as C301.
+I do recommend a 3-pole net-entry with a grounded power cable. In such case, you ought to connect the ground terminal directly to the chassis, that is standard safety rulings. The audio connectors in your back panel, both the cinch audio inputs and any speaker outputs, should better (and typically do) isolate their audio ground from the chassis metal. The RelaixedPassive separates on its PCB the audio ground from the digital/control ground: they are separated through a 100 ohm resistor R304.
+I do recommend that audio ground is NOT directly connected to your chassis metal, but that you DO connect the digital ground to the chassis as the dotted ‘gnd?’ wire in above drawing. That leaves 100 ohms between audio ground and the chassis. If you have several metal cabinets in your audio system, all using such a pattern, then all cabinet metals are interconnected through power-ground, and all audio-ground is interconnected through audio shielded cinch cables, and you thus avoid the infamous loop between audio and power ground which causes hum.
+Alternatively, if you choose to follow other instructions, those might advise you to choose a single point where you connect all audio ground wires to the chassis. If you do that, then you should NOT also connect the digital/control ground there. So you leave out the dotted ‘gnd?’ wire in above picture, and hence leave the 100 ohm resistance between chassis/signal ground and digital ground.
+Operating instructions
+Using the rotary switch
+The RelaiXed design is operated through a single rotary switch that has an additional ‘push button’ control built-in. Merging multiple control functions into a single knob was chosen as result of my personal preference: It keeps the front-panel visually simple and sleek, and it relieves me from doing a more complex mechanical job which is not my expertise...
+
+The RelaiXed is in one of two major operating modes:
+Standby mode:
+In standby mode, the display is off, except for one ‘decimal dot’ in the display which remains on.
+All relays are off (unpowered). The system consumes at most 0.1W of power on the primary (high-voltage ac) input, which is a very low value in comparison to some other consumer devices.
+The RelaiXed does not react on turning the volume-control. It ‘wakes-up’ to operational mode by clicking the knob (press and release), or through the remote control power-button.
+
+Operational mode:
+When entering ‘operational mode’, the relays are activated to also provide power to attached devices on the power output, such as a power-transformer for a power amplifier. The audio output remains in ‘mute’ mode for about two seconds. During the same period, power output has a series-resistance which limits rush-in power current peaks. After these initial two seconds, the audio becomes operational and the output power is switched to fully on.
+Turning the control-knob updates the volume. The volume values range from ‘00’ to ‘64’.
+Clicking the control-knob (quick press-and-release) moves the audio input selector to the next channel, with a cyclic wrap around. The display shortly shows ‘C1’ to ‘C4’ and then reverts back to displaying the current volume.
+Pushing and simultaneously turning the control-knob adjusts the left-right balance. The display shows ‘-9’ to ‘ 0’ to ‘ 9’. This corresponds to the volume-difference between the left and right channel. Releasing the knob reverts back to showing the volume. Note however, balance control is not available on the standard passive attenuator with only a single relay board.
+Pushing the knob and holding it still and pressed for about two seconds puts the RelaiXed back in stand-by mode. The display first shows ‘00’ denoting mute mode, and then switches itself off.
+
+The last chosen volume and input channel are stored in the microcontroller internal flash memory. At the next power-up the RelaiXed comes back to this previous mode.
+You might directly switch the RelaiXed primary power off, instead of merely providing commands to ‘standby’ mode. If you switch the primary power off, the microcontroller will quickly enter ‘mute’ mode to silence the audio output just before its power-supply is faded-out.
+Using the IR control
+The RelaiXed IR receiver, in the current software release, can decode the following IR signals:
+The Philips RC5, RC5X, and RC6 protocols
+The Sony SIRC protocol in its 12-bit and 15-bit version
+This flexibility allows the RelaiXed to be used with a wide range of IR control handhelds, among which all multi-brand controllers.
+
+Within each of these protocols, received commands have a device-code and a button-code. By default (when the PIC is newly programmed), the RelaiXed reacts on each protocol and each device code, interpreting the button-code only. This allows you to quickly find-out if your IR handheld is compatible with the RelaiXed receiver. To avoid that the RelaiXed reacts on too many devices, and interprets commands destined for another of your devices, see the next section.
+
+To support interoperability with various types of IR controllers, the RelaiXed functions are activated by various button codes. The table below lists the active button-codes:
+
+Function
+Activated by buttons
+Volume up
+Volume up, Cursor up
+Volume down
+Volume down, Cursor down
+Balance left
+Balance left, Cursor left
+Balance Right
+Balance Right, Cursor right
+Input select Up
+Channel/Program up
+Input select down
+Channel/Program down
+Input select 1..4
+Digit 1 .. 4
+Mute
+Mute, Pause, Stop
+Unmute
+Play, Volume up, Volume Down
+Power down
+Power, Standby
+Power up
+Power 
+
+
+Restricting IR device target
+By default, loaded with a fresh firmware, the Relaixed IR receiver can decode and handle various manufacturer IR protocols. As result, it will react on everything that is recognized. A special initialization sequence will restrict the RelaiXed receiver to react on one chosen protocol and target device code only. If you have several IR-controlled devices around, this restriction is probably needed to prevent the Relaixed from acting upon commands that you intended for one of your other devices.
+Within the first two seconds of power-up, the display shows ‘00’. If you press ‘volume up’ followed by ‘volume down’ inside this two-second period, RelaiXed will restrict itself to react only on the IR protocol and target device ID that came with these buttons. To confirm successful restriction, the display will shortly show ‘rc’.
+Note that this activation only occurs at real power-up from primary power, not on power-up from standby. (Or, in other words, only after the PIC comes out of reset state.)
+To reprogram the RelaiXed to bind itself to a different IR controller and device ID, the above sequence can be repeated with a new IR controller: the power-up initialization sequence is not restricted to an earlier bound controller.
+Note that you cannot go back to the mode where RelaiXed will fully operate on any IR controller without filtering on a device ID, except by re-programming its firmware.
+Upgrading to a new software revision
+The Relaixed project software consists of three components, available for download at http://sourceforge.net/projects/relaixed2/files/:
+The ‘RelaixedApp-*.hex’  embedded software (‘firmware’) that is stored internally in the PIC microcontroller that controls the RelaiXed operation. It is stored in the PIC flash memory at addresses above 2000(hex).
+The PIC ‘RelaixedHIDBootloader-*.hex’ embedded software. This software operates the PIC USB connection and contains a self-programmer function to allow re-programming the ‘RelaixedApp’ through a USB connection to a PC. It is stored in the PIC flash memory at addresses below 2000(hex).
+The PC-bound software application ‘Relaixed-*.exe’ that is used to communicate with the Relaixed-PIC, mainly for reprogramming the ‘RelaixedApp’. Next for programming, it has an additional feature to support relaixed application programmers: it will do logging of run-time Relaixed debug messages.
+
+If you order a Relaixed microcontroller from me (typically with the PCBs), the microcontroller will contain both the upper 1. and 2. software components, and is ready to use.
+
+If you later want to upgrade your RelaiXed to a newer firmware version, you need to download 3. and (the newer version of) 1. Through a USB connection, you can now install 1. inside the PIC.
+
+If you bought a blank microcontroller from the shop, you will need to use a real programmer device to first ‘program’ 2. into the PIC chip. After doing so, you can install 1. through the use of 3.
+
+All the above mentioned software is available in source-code form. You can browse through the code at the following link: https://sourceforge.net/p/relaixed2/code If you want to help me with co-development of this code, you should download the source-code while maintaining the code ‘SVN’ revision system. For further information see the Relaixed software development manual.
+Installing the PC-based Relaixed interface application
+Currently, the PC-based application to communicate with your RelaiXed is only available for Microsoft Windows platforms. I feel really sorry about that....
+You can download the application from this link: http://sourceforge.net/projects/relaixed2/files/Relaixed-1.1.exe/download
+
+You can store this ‘.exe’ file anywhere on you PC, and launch it by clicking it: it does not need further install scripts to run. It will run on various Windows versions, I tried both ‘XP’ and ‘Windows-7’. It is itself a 32-bit application, but will run fine also in a 64-bit Windows version. Its main prerequisite is the availability of the Windows .Net runtime environment. This is available by default in Windows-7. In older Windows you could install it from e.g.: http://www.microsoft.com/download/en/details.aspx?id=17851 
+
+On some PCs with an older Windows version, the Relaixed application will not start-up, not show the window as below, but immediately crash with an error. This is due to some missing code-libraries that this application assumes present in the Windows installation folders. If the application does not start-up in your PC, you should install the missing libraries from: http://www.microsoft.com/download/en/details.aspx?id=5555
+
+
+If you launch the application without any (USB-) connection to a RelaiXed frontpanel, it will come up with a window such as:
+
+So it complains (rightfully) that the RelaiXed device is not detected. The ‘is in bootloader mode’ message is actually not appropriate, and is a remnant from the original Microchip software: the RelaiXed does not have such mode.
+Updating your microcontroller
+You downoad the new firmware version from http://sourceforge.net/projects/relaixed2/files/, named as RelaixedApp-20110803.hex (or with some newer date in its name). Store this file somewhere on your PC.
+You connect the Relaixed frontpanel with a USB cable to your PC. You can leave the frontpanel connected into the rest of your pre-amplifier. Preferably you do not power-up the pre-amplifier. Its display will light-up from USB power. The device should be automatically/silently recognised by Windows as USB HID device, as described in the Assembly chapter, ‘test 7 - USB operation’.
+You launch the forementioned RelaiXed interface application. Its text window should now show messages ‘Device Attached’ and ‘Device query OK’. It is also OK to first launch the application and then plug-in the USB.
+In the application you now click ‘Open Hex file’ and provide it the just downloaded ‘RelaixedApp-*.hex’ file.
+You click the ‘Program/Verify’ button. If the reprogramming works fine, you end up with a screen like:
+
+The log shows that the PIC passes through the following phases: erase, program, verify, restart.
+This indicates that you are done, and can use your RelaiXed with the new firmware version.
+
+Unfortunately, this re-program process is somewhat unreliable. You would have a reasonable chance that it does not pass through all those four phases and becomes stuck earlier...
+I am not yet sure whether that is due to errors in the original Microchip code, or due to updates I made in this code, but the original source code already contained comments regarding risc of deadlock. That source code from Microchip is really badly written and structured, and seems to me in terrible shape, beyond repair. I have some plans to rewrite a totally new and cleaner application as replacement, that would also not be bound to just Windows. However, that might take a while....
+
+The following text helps you to recover from a premature deadlock during programming:
+Deadlock during ‘Verify’
+Normally this means that the programming went fine. I have never seen that the programming itself completed but was somehow faulty, causing a verification error. So you might just try and use the result. The deadlock itself is removed by detaching the USB cable, unpowering the Relaixed front panel, and closing the bootloader PC application. You can then reconnect the USB and restart the app. You might want to try now ‘Open Hex File’, followed by ‘Verify’ to check the content of the embedded flash.
+Deadlock during ‘Programming’
+Luckily, this situation seems more rare. You should definitely retry: detach the USB, unpowering the frontpanel, close the PC application, and start again. In a few cases, the mis-programming leads to a faulty flash content where the PIC refuses to make a valid USB connection with the PC: the device is not recognized anymore. If this occurs, you cannot simply redo the same procedure.
+Failsafe bootloader access
+To recover from such a faulty flash content, I provided the PIC bootloader with a failsafe restart method: Your pre-amp is unpowered, you keep the control-knob (switch) pressed, you plug in the USB, and only then release the control knob. The display now comes up with a single LED-segment lighted up. The PC application will now definitely connect to the Relaixed again, irrespective of earlier errors, and you can safely redo the programming with a 100% chance of success.
+Programming an empty microcontroller
+If you bought an empty microcontroller, or if you want to replace the microcontroller bootloader itself, you need to attach a programmer device. The current software configuration has reserved the lower 2000(hex) bytes in the on-chip flash for a USB HID bootloader, which is plenty of space. The standard bootloader from Microchip was modified by me for different reasons, explained in the software manual. This modified bootloader is available from the project sourceforge website: http://sourceforge.net/projects/relaixed2/files/RelaixedHIDBootloader-20110525.hex/download
+(or a newer date in this name).
+You provide this file to the programmer software, and connect the programmer to the front-panel as in the picture below. Note that the front-panel has a standard 5-pin programmer interface, but this Pickit2 has an extended 6-pin interface. The required power can be provided by the programmer itself, there is no need for powering-up the front panel.
+

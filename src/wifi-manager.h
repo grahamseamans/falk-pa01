@@ -6,7 +6,7 @@
 #include "ESPAsyncWebServer.h"
 #include <ESPmDNS.h>
 #include <Update.h>
-#include <SPIFFS.h>
+// SPIFFS no longer needed - web files embedded in firmware
 #include "esp_task_wdt.h"
 #include "esp_int_wdt.h"
 #include "ArduinoJson.h"

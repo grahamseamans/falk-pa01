@@ -12,41 +12,88 @@
 }
 
 :root {
-  /* page background (and anything that's the same color) */
-  --body-bg: #f7f7f7;
-
-  /* grayscale stuff */
-  --white: #ffffff;
-  --lighter-gray: #efefef;
-  --light-gray: #e1e1e1;
-  --mid-gray: #c3c3c3;
-  --dark-gray: #6f6f6f;
-
-  /* anything that's disabled */
+  /* Backgrounds */
+  --bg-primary: #f7f7f7;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #efefef;
+  
+  /* Text */
+  --text-primary: #333333;
+  --text-secondary: #6f6f6f;
+  --text-muted: #999999;
+  
+  /* Borders */
+  --border-light: #e1e1e1;
+  --border-medium: #c3c3c3;
+  --border-strong: #999999;
+  
+  /* Interactive elements */
+  --interactive-bg: #c3c3c3;
+  --interactive-fg: #ffffff;
   --disabled: #bbbdbf;
+  
+  /* Brand colors */
+  --brand-primary: #4D84C3;
+  --brand-secondary: #6999cf;
+  --brand-tertiary: #1a4577;
 
-  /* brand colors */
-  --royal-blue: #4D84C3;
-  --light-blue: #6999cf;
-  --dark-blue: #1a4577;
+  /* Status colors */
+  --success: #4dc396;
+  --success-light: #62daac;
+  --success-bg: #ddf1ea;
 
-  /* secondary colors */
-  --green: #4dc396;
-  --green-light: #62daac;
-  --green-lightest: #ddf1ea;
+  --warning: #e7d42b;
+  --warning-dark: #aa9c1a;
+  --warning-bg: #f0ebbc;
 
-  --yellow-dark: #aa9c1a;
-  --yellow: #e7d42b;
-  --yellow-lightest: #f0ebbc;
+  --danger: #C34D4D;
+  --danger-light: #d66363;
+  --danger-bg: #F9E0E0;
+}
 
-  --red: #C34D4D;
-  --red-light: #d66363;
-  --red-lightest: #F9E0E0;
+[data-theme="dark"] {
+  /* Backgrounds */
+  --bg-primary: #1a1a1a;
+  --bg-secondary: #2a2a2a;
+  --bg-tertiary: #333333;
+  
+  /* Text */
+  --text-primary: #ffffff;
+  --text-secondary: #cccccc;
+  --text-muted: #888888;
+  
+  /* Borders */
+  --border-light: #404040;
+  --border-medium: #666666;
+  --border-strong: #888888;
+  
+  /* Interactive elements */
+  --interactive-bg: #888888;
+  --interactive-fg: #ffffff;
+  --disabled: #666666;
+  
+  /* Brand colors */
+  --brand-primary: #5a94d3;
+  --brand-secondary: #79a9df;
+  --brand-tertiary: #2a5587;
+
+  /* Status colors */
+  --success: #5dd3a6;
+  --success-light: #72eabc;
+  --success-bg: #2d4a3a;
+
+  --warning: #f7e43b;
+  --warning-dark: #baac2a;
+  --warning-bg: #4a462c;
+
+  --danger: #d35d5d;
+  --danger-light: #e67373;
+  --danger-bg: #4a2d2d;
 }
 
 body {         
-  background: var(--body-bg);
-  color: var(--dark-gray);
+  background: var(--bg-primary);
+  color: var(--text-secondary);
   font-size: 16px;
   margin: 0;
   padding: 0;
@@ -105,7 +152,7 @@ p.text-sm {
   transition: background-color 0.3s ease;
 }
 .pointer:hover .icon-hover {
-  background: var(--light-gray);
+  background: var(--border-light);
   transition: background-color 0.3s ease;
 }
 .inline-block {
@@ -113,13 +160,13 @@ p.text-sm {
 }
 
 .button {
-  background-color: var(--royal-blue);
+  background-color: var(--brand-primary);
   margin-right: 5px;
   padding: 8px 32px;
   border-radius: 1000px;
-  color: var(--white);
+  color: var(--interactive-fg);
   display: inline-block;
-  border: 2px solid var(--royal-blue);
+  border: 2px solid var(--brand-primary);
   cursor: pointer;
   transition: all 0.3s ease;
   outline: none;
@@ -127,18 +174,18 @@ p.text-sm {
 }
 .button:disabled,
 .button:disabled:hover {
-  background-color: var(--mid-gray)!important;
-  border-color: var(--mid-gray)!important;
+  background-color: var(--disabled)!important;
+  border-color: var(--disabled)!important;
   cursor: inherit;
 }
 .button:hover {
-  background-color: var(--light-blue)!important;
-  border-color: var(--light-blue)!important;
+  background-color: var(--brand-secondary)!important;
+  border-color: var(--brand-secondary)!important;
   transition: all 0.3s ease;
-  color: var(--white)!important;
+  color: var(--interactive-fg)!important;
 }
 .button:focus {
-  border-color: var(--dark-blue);
+  border-color: var(--brand-tertiary);
 }
 .button.button-sm {
   padding: 6px 16px;
@@ -146,59 +193,59 @@ p.text-sm {
 }
 .button.outline {
   background-color: transparent;
-  border-color: var(--mid-gray);
-  color: var(--dark-gray);
+  border-color: var(--border-medium);
+  color: var(--text-secondary);
 }
 .button.outline:hover {
-  background-color: var(--light-gray)!important;
-  border-color: var(--mid-gray)!important;
-  color: var(--dark-gray)!important;
+  background-color: var(--bg-tertiary)!important;
+  border-color: var(--border-medium)!important;
+  color: var(--text-secondary)!important;
 }
 .button.outline:focus {
-  border-color: var(--dark-gray);
+  border-color: var(--text-secondary);
 }
 .button.button-hidden {
-  border-color: var(--body-bg);
-  background-color: var(--body-bg);
-  color: var(--royal-blue);
+  border-color: var(--bg-primary);
+  background-color: var(--bg-primary);
+  color: var(--brand-primary);
 }
 .button.danger {
-  background-color: var(--red);
-  border-color: var(--red);
+  background-color: var(--danger);
+  border-color: var(--danger);
 }
 .button.danger:hover {
-  background-color: var(--red-light)!important;
-  border-color: var(--red-light)!important;
+  background-color: var(--danger-light)!important;
+  border-color: var(--danger-light)!important;
 }
 .button.success {
-  background-color: var(--green);
-  border-color: var(--green);
+  background-color: var(--success);
+  border-color: var(--success);
 }
 .button.success:hover {
-  background-color: var(--green-light)!important;
-  border-color: var(--green-light)!important;
+  background-color: var(--success-light)!important;
+  border-color: var(--success-light)!important;
 }
 .button.white-danger {
-  background-color: var(--white);
-  border-color: var(--white);
-  color: var(--red);
+  background-color: var(--bg-secondary);
+  border-color: var(--bg-secondary);
+  color: var(--danger);
 }
 .button.white-danger:hover {
-  background-color: var(--red-light)!important;
-  border-color: var(--red-light)!important;
+  background-color: var(--danger-light)!important;
+  border-color: var(--danger-light)!important;
 }
 
 .row.pointer:hover .button.button-hidden {
-  background-color: var(--light-blue)!important;
-  border-color: var(--light-blue)!important;
+  background-color: var(--brand-secondary)!important;
+  border-color: var(--brand-secondary)!important;
   transition: all 0.3s ease;
-  color: var(--white)!important;
+  color: var(--interactive-fg)!important;
 }
 
 .indicator {
   height: 18px;
   width: 18px;
-  border: 3px solid var(--light-gray);
+  border: 3px solid var(--border-light);
   border-radius: 1000px;
   margin-left: auto;
   margin-right: auto;
@@ -212,20 +259,20 @@ p.text-sm {
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background-color: var(--white);
+  background-color: var(--bg-secondary);
   transition: border-color 0.3s ease;
   transition: background-color 0.3s ease;
 }
 .indicator.selected {
-  border-color: var(--royal-blue)!important;
+  border-color: var(--brand-primary)!important;
   transition: border-color 0.3s ease;
 }
 .indicator.selected::after {
-  background-color: var(--royal-blue);
+  background-color: var(--brand-primary);
   transition: background-color 0.3s ease;
 }
 label:hover .indicator {
-  border-color: var(--mid-gray);
+  border-color: var(--border-medium);
   transition: border-color 0.3s ease;
 }
 
@@ -233,8 +280,8 @@ label:hover .indicator {
 /* -------- EXTEND FLEXGRID -------- */
 .row.header {
   margin: 0;
-  background-color: var(--royal-blue);
-  color: var(--white);
+  background-color: var(--brand-primary);
+  color: var(--interactive-fg);
 }
 .row.disabled {
   color: var(--disabled);
@@ -275,7 +322,7 @@ label:hover .indicator {
 svg.icon {
   width: 24px;
   height: 24px;
-  stroke: var(--dark-gray);
+  stroke: var(--text-secondary);
   stroke-width: 2;
   stroke-linecap: round;
   stroke-linejoin: round;
@@ -290,10 +337,10 @@ svg.icon-sm {
   height: 24px;
 }
 svg.icon-white {
-  stroke: var(--white);
+  stroke: var(--interactive-fg);
 }
 .box {
-  background-color: var(--white);
+  background-color: var(--bg-secondary);
   border-radius: 6px;
   padding: 30px;
 }
@@ -312,16 +359,15 @@ margin: 0;
 .tabs li a {
   font-size: 18px;
   display: inline-block;
-  padding: 4px 60px 10px 5px;
+  padding: 4px 20px 10px 5px;
   text-decoration: none;
-  border-bottom: 
-  px solid var(--light-gray);
+  border-bottom: 1px solid var(--border-light);
 }
 .tabs li:first-child a {
   padding-left: 0
 }
 .tabs li.selected a {
-  border-bottom-color: var(--royal-blue);
+  border-bottom-color: var(--brand-primary);
 }
 .tabs li a:hover {
   cursor: pointer;
@@ -334,14 +380,14 @@ margin: 0;
 }
 
 .message {
-  background-color: var(--light-gray);
+  background-color: var(--border-light);
   border-radius: 6px;
   padding: 20px 24px;
   margin: 30px 0;
 }
 .message .heading {
-  background-color: var(--dark-gray);
-  color: var(--white);
+  background-color: var(--text-secondary);
+  color: var(--bg-secondary);
   font-weight: normal;
   border-top-left-radius: 6px;
   border-top-right-radius: 6px;
@@ -350,28 +396,69 @@ margin: 0;
 }
 
 .message.warning {
-  background-color: var(--yellow-lightest);
-  color: var(--yellow-dark);
+  background-color: var(--warning-bg);
+  color: var(--warning-dark);
 }
 .message.warning .heading {
-  background-color: var(--yellow);
+  background-color: var(--warning);
 }
 .message.danger {
-  background-color: var(--red-lightest);
-  color: var(--red);
+  background-color: var(--danger-bg);
+  color: var(--danger);
 }
 .message.danger .heading {
-  background-color: var(--red);
+  background-color: var(--danger);
 }
 .message.success {
-  background-color: var(--green-lightest);
-  color: var(--green);
+  background-color: var(--success-bg);
+  color: var(--success);
 }
 .message.success .heading {
-  background-color: var(--green);
+  background-color: var(--success);
 }
 
 /* -------- UNIQUE -------- */
+#theme-toggle {
+  position: absolute;
+  top: 22px;
+  right: 70px;
+}
+@media (min-width: 768px) {
+  #theme-toggle {
+    top: 28px;
+    right: 90px;
+  }
+}
+
+.theme-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 1000px;
+  transition: background-color 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.theme-button:hover {
+  background-color: var(--brand-secondary);
+  transition: background-color 0.3s ease;
+}
+
+.firmware-upload-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-top: 15px;
+}
+
+.firmware-upload-form input[type="file"] {
+  padding: 8px 0;
+  margin-bottom: 0;
+}
+
 #settings-icon {
   position: absolute;
   top: 22px;
@@ -403,8 +490,8 @@ margin: 0;
 #reset-page .content {
   height: 300px;
   width: 500px;
-  background-color: var(--red);
-  color: var(--white);
+  background-color: var(--danger);
+  color: var(--bg-secondary);
   border-radius: 8px;
   position: absolute;
   left: calc(100vw / 2 - 250px);
@@ -437,6 +524,12 @@ margin: 0;
   padding-top: 40px;
 }
 
+.header-home-link {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+
 figure.logo svg {
   width: 45px;
   height: 45px;
@@ -460,7 +553,7 @@ figure.logo svg {
   appearance: none;
   width: 100%;
   height: 15px;
-  background: var(--lighter-gray);
+  background: var(--bg-tertiary);
   border-radius: 40000px;
   outline: none;
   cursor: pointer;
@@ -471,14 +564,14 @@ figure.logo svg {
   appearance: none;
   width: 20px;
   height: 20px;
-  background: var(--royal-blue);
+  background: var(--brand-primary);
   border-radius: 100%;
   cursor: pointer;
 }
 .volume::-moz-range-thumb {
   width: 20px;
   height: 20px;
-  background: var(--royal-blue);
+  background: var(--brand-primary);
   border-radius: 100%;
   cursor: pointer;
 }
@@ -498,19 +591,19 @@ figure.logo svg {
   border-radius: 5px;
 }
 #progress-container progress[value]::-webkit-progress-bar {
-  background-color: var(--light-gray);
+  background-color: var(--border-light);
   height: 17px;
   border-radius: 1000px;
   overflow: hidden;
 }
 #progress-container progress[value]::-moz-progress-bar {
-  background-color: var(--light-gray);
+  background-color: var(--border-light);
   height: 17px;
   border-radius: 1000px;
   overflow: hidden;
 }
 #progress-container progress[value]::-webkit-progress-value {
-  background-color: var(--royal-blue);
+  background-color: var(--brand-primary);
 }
 
 .white-halo {
@@ -520,7 +613,7 @@ figure.logo svg {
   transition: background-color 0.3s ease;
 }
 .white-halo:hover {
-  background-color: var(--light-blue);
+  background-color: var(--brand-secondary);
   transition: background-color 0.3s ease;
 }
 
@@ -542,7 +635,7 @@ label.input-selector .selector {
   display: inline-block;
   height: 18px;
   width: 18px;
-  border: 3px solid var(--mid-gray);
+  border: 3px solid var(--border-medium);
   border-radius: 1000px;
   margin-top: 8px;
   transition: border-color 0.3s ease;
@@ -557,26 +650,26 @@ label.input-selector .selector:after {
   width: 10px;
   height: 10px;
   border-radius: 1000px;
-  background-color: var(--body-bg);
+  background-color: var(--bg-primary);
   transition: background-color 0.3s ease;
 }
 
 label.input-selector input:checked ~ .selector:after {
-  background-color: var(--royal-blue);
+  background-color: var(--brand-primary);
   transition: background-color 0.3s ease;
 }
 
 label.input-selector:hover .selector {
-  border: 3px solid var(--light-gray);
+  border: 3px solid var(--border-light);
   transition: border-color 0.3s ease;
 }
 label.input-selector input:checked ~ .selector {
-  border-color: var(--royal-blue);
+  border-color: var(--brand-primary);
   transition: border-color 0.3s ease;
 }
 
 .input-box { /* INPUT SELECTOR (homepage) */
-  background: var(--white);
+  background: var(--bg-secondary);
   border-radius: 6px;
   padding: 30px 5px;
   margin-bottom: 8px;
@@ -592,8 +685,8 @@ label.input-selector input:checked ~ .selector {
 #banner {
   height: 100vh;
   width: 100vw;
-  background-color: var(--royal-blue);
-  color: var(--white);
+  background-color: var(--brand-primary);
+  color: var(--bg-secondary);
   position: absolute;
   left: 0;
   top: -100vh;
@@ -622,11 +715,10 @@ label.input-selector input:checked ~ .selector {
   width: 100%;
   height: 100%;
   overflow: auto;
-  background-color: #707982;
-  background-color: #70798277;
+  background-color: rgba(0,0,0,0.5);
 }
 .modal-content {
-  background-color: #1B1F23;
+  background-color: var(--bg-secondary);
   border: none;
   border-radius: 10px;
   width: 80%;
@@ -649,7 +741,7 @@ label.input-selector input:checked ~ .selector {
 }
 .modal-footer button {
   border: 0;
-  background: #70798233;
+  background: var(--bg-tertiary);
   color: inherit;
   padding: 10px 0;
   font-size: inherit;
@@ -658,7 +750,7 @@ label.input-selector input:checked ~ .selector {
   width: 50%;
 }
 .modal-footer button.save {
-  background: var(--royal-blue);
+  background: var(--brand-primary);
 }
 .modal-footer button.cancel {
   text-decoration: underline;
@@ -689,16 +781,16 @@ fieldset {
 .addon button {
   background: transparent;
   border: 0;
-  color: var(--royal-blue);
+  color: var(--brand-primary);
   line-height: 1;
   padding: 3px 10px;
-  border: 2px solid var(--mid-gray);
+  border: 2px solid var(--border-medium);
   font-weight: normal;
   outline: none;
   transition: all 0.3s ease;
 }
 .addon button:focus {
-  border-color: var(--dark-gray);
+  border-color: var(--text-secondary);
   transition: all 0.3s ease;
 }
 .addon button svg {
@@ -718,9 +810,9 @@ fieldset {
 input[type="number"],
 input[type="text"],
 input[type="password"] {
-  border: 2px solid var(--mid-gray);
-  background: var(--white);
-  color: var(--dark-gray);
+  border: 2px solid var(--border-medium);
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
   outline: none;
   font-size: 16px;
   padding: 8px 12px;
@@ -729,7 +821,7 @@ input[type="password"] {
 }
 
 input[type="number"] {
-  background: var(--body-bg);
+  background: var(--bg-primary);
   -moz-appearance: textfield;
   padding: 8px 0;
   width: 38px;
@@ -739,7 +831,7 @@ input[type="number"] {
 input[type="number"]:focus,
 input[type="text"]:focus,
 input[type="password"]:focus {
-  border-color: var(--dark-gray);
+  border-color: var(--text-secondary);
   transition: all 0.3s ease;
 }
 input::-webkit-outer-spin-button,
@@ -753,70 +845,18 @@ input::-webkit-inner-spin-button {
   display: block;
 }
 .helper.danger {
-  color: var(--red);
+  color: var(--danger);
 }
 
-/* The switch - the box around the slider */
-.switch {
-  position: relative;
-  display: inline-block;
-  width: 47px;
-  height: 23px;
+
+
+/* -------- PAGE MANAGEMENT -------- */
+.page {
+  display: none;
 }
 
-/* Hide default HTML checkbox */
-.switch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-/* The slider */
-.slider {
-  position: absolute;
-  cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: var(--mid-gray);
-  -webkit-transition: .4s;
-  transition: .4s;
-}
-
-.slider:before {
-  position: absolute;
-  content: "";
-  height: 15px;
-  width: 15px;
-  left: 4px;
-  bottom: 4px;
-  background-color: var(--white);
-  -webkit-transition: .4s;
-  transition: .4s;
-}
-
-input:checked + .slider {
-  background-color: var(--royal-blue);
-}
-
-input:focus + .slider {
-  box-shadow: 0 0 1px var(--royal-blue);
-}
-
-input:checked + .slider:before {
-  -webkit-transform: translateX(23px);
-  -ms-transform: translateX(23px);
-  transform: translateX(23px);
-}
-
-/* Rounded sliders */
-.slider.round {
-  border-radius: 1000px;
-}
-
-.slider.round:before {
-  border-radius: 50%;
+.page.active {
+  display: block;
 }
 
 /* -------- ANIMATIONS -------- */
