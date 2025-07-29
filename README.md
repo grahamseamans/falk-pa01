@@ -9,33 +9,49 @@ This version has been adapted for RelaiXed Passive 6-bit attenuator control:
 - I2C addressing updated for RelaiXed Passive hardware
 
 ### Build
-- Install [Visual Studio Code](https://code.visualstudio.com/download) and open
-- From the Extensions window, install PlatformIO (this will take a while)
+Install PlatformIO CLI (recommended over VSCode for reliability):
 
+```bash
+# Install PlatformIO CLI
+pip install platformio
+# or on macOS with externally-managed Python:
+pipx install platformio
+
+# Clone and build
+git clone https://github.com/grahamseamans/open-pre.git
+cd open-pre
+pio run                    # Build firmware
+pio run -t buildfs         # Build filesystem image
 ```
-cd ~
-git clone https://github.com/gilphilbert/falk-pa01-advanced.git
-code .
-```
-
-To build the firmware click on the PlatformIO tab on the left (little alien) and then select `Build` under `esp32dev`. When that completes, select `Build Filesystem Image` under `Platform`.
-
-Note: PlatformIO [can have issues on MacOS](https://github.com/gilphilbert/falk-pa01-advanced/issues/3), for now using a virtual machine with Debian installed is the recommended workaround.
 
 ### Installation
-Assuming those both complete, you're ready to flash the firmware
-- Connect the Ground, TX and RX connectors on the ESP32 board to a serial adapter
+The ESP32 requires a specific programming sequence due to the auto-update firmware mechanism:
+
+#### Wiring
+- Connect Ground, TX and RX connectors on the ESP32 board to a serial adapter
 - **IMPORTANT**: Cross the connections - ESP32 TX goes to adapter RX, ESP32 RX goes to adapter TX
 - Connect the serial adapter to your development machine
-- Power up the Advanced Control Board
-- While holding down the BOOT button, press the RESET button
-- In PlatformIO, click the `Upload` option under `esp32dev` or press `CTRL` + `SHIFT` + `U`
-  - This will rebuild and upload the code to the Advanced Control Board
-  - If you see an error saying you need to install udev rules, follow the link to install the rules then try again
-- Once the firmware upload is complete, put the board back into programming mode by holding the BOOT button and pressing the RESET button again
-- Now upload the filesystem image by going to the PlatformIO tab and clicking on `Upload Filesystem Image` (not the OTA one!)
-- When the upload is complete, press the RESET button on the Advanced Control Board
-- Programming is complete!
+- Power up the ESP32 board
+
+#### Programming Sequence
+This project has unusual build requirements due to auto-update firmware that loads from filesystem on boot:
+
+```bash
+# 1. Build both firmware and filesystem
+pio run && pio run -t buildfs
+
+# 2. Enter programming mode: Hold BOOT, press EN, release EN, release BOOT
+# 3. Upload firmware
+pio run -t upload
+
+# 4. Enter programming mode again: Hold BOOT, press EN, release EN, release BOOT  
+# 5. Upload filesystem (critical - contains firmware copy for auto-update)
+pio run -t uploadfs
+
+# 6. Reset: Press EN to boot normally
+```
+
+**Note**: Both firmware AND filesystem uploads are required. The firmware auto-updates from the filesystem on every boot, so skipping the filesystem upload will cause reverts to old firmware.
 
 ### Updating the firmware
 Once you have the PA-01 connected to your wifi, you can update your PA-01 easily. When you've made changes to the code, simply build the code. If you haven't made changes to the UI, then you can upload the firmware directly using the Web UI:
