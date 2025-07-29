@@ -8,7 +8,7 @@
 // ====== MINIMUM AND MAXIMUM VOLUME ====== //
 
 #define VOL_MIN                 0
-#define VOL_MAX                 255
+#define VOL_MAX                 63  // Changed to 6-bit for RelaiXed Passive (GPB0-GPB5)
 
 // ====== HOW MANY INPUTS ====== //
 
@@ -30,13 +30,13 @@
 
 // ====== DEFINE PINS ====== //
 
-#define WIFI_BUTTON             35
+#define WIFI_BUTTON             34  // Swapped: now using volume button for WiFi
 
 #define SCREEN_CS               5
 #define SCREEN_DC               15
 #define SCREEN_RST              13
 
-#define MUTE_BUTTON             34
+#define MUTE_BUTTON             35  // Swapped: INPUT button for mute (broken but won't be used)
 
 #define INP_ENCODER_A           14
 #define INP_ENCODER_B           27

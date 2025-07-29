@@ -11,7 +11,7 @@
 #define MCP_PORTA_PINS          0x12
 #define MCP_PORTB_PINS          0x13
 
-#define MCP_VOLUME_ADDRESS      0x20
+#define MCP_VOLUME_ADDRESS      0x24  // A2=HIGH, A1=GND, A0=GND
 
 #define RELAY_PULSE             50
 

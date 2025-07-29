@@ -8,9 +8,8 @@ short vol_max = 0;
 short vol_min = 0;
 
 void VolumeController::volEncLoop(int m) {
-  if ((VolumeRelayPulseTime > 0) && (m > VolumeRelayPulseTime + RELAY_PULSE)) {
-    endPulse();
-  }
+  // Non-latching relays don't need pulse timing
+  // Volume stays set until changed
 }
 
 void VolumeController::begin(short min, short max) {
@@ -32,43 +31,36 @@ void VolumeController::begin(short min, short max) {
 }
 
 void VolumeController::set(int volume) {
-  //select the volume GPIOs
+  // Constrain volume to 6-bit range (0-63)
+  if (volume < vol_min) volume = vol_min;
+  if (volume > vol_max) volume = vol_max;
+  
+  // RelaiXed Passive uses GPB0-GPB5 (6 bits) for volume control
+  // Convert volume (0-63) to 6-bit pattern
+  byte volumeBits = (byte)(volume & 0x3F);  // Mask to 6 bits
+  
+  Serial.print("Setting volume to ");
+  Serial.print(volume);
+  Serial.print(" (0x");
+  Serial.print(volumeBits, HEX);
+  Serial.println(")");
+  
+  // Send 6-bit volume to Port B pins 0-5
   Wire.beginTransmission(MCP_VOLUME_ADDRESS);
-  //select the "A" bank pins
-  Wire.write(MCP_PORTA_PINS);
-  //set volume
-  Wire.write(volume);
-  //kill session
-  Wire.endTransmission();
-  //select the volume GPIOs
-  Wire.beginTransmission(MCP_VOLUME_ADDRESS);
-  //select the "A" bank pins
   Wire.write(MCP_PORTB_PINS);
-  //set volume
-  Wire.write(vol_max - volume);
-  //kill session
-  Wire.endTransmission();
-  VolumeRelayPulseTime = millis();
+  Wire.write(volumeBits);
+  byte result = Wire.endTransmission();
+  
+  if (result != 0) {
+    Serial.print("I2C error: ");
+    Serial.println(result);
+  }
+  
+  VolumeRelayPulseTime = 0;
 }
 
 void VolumeController::endPulse() {
-  //select the volume GPIOs
-  Wire.beginTransmission(MCP_VOLUME_ADDRESS);
-  //select the "A" bank pins
-  Wire.write(MCP_PORTA_PINS);
-  //set volume
-  Wire.write(0);
-  //kill session
-  Wire.endTransmission();
-  //select the volume GPIOs
-  Wire.beginTransmission(MCP_VOLUME_ADDRESS);
-  //select the "B" bank pins
-  Wire.write(MCP_PORTB_PINS);
-  //set volume
-  Wire.write(0);
-  //kill session
-  Wire.endTransmission();
-  //stop this running again
+  // Not needed for non-latching relays - they stay in position
   VolumeRelayPulseTime = 0;
 }
 
