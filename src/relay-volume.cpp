@@ -39,11 +39,6 @@ void VolumeController::set(int volume) {
   // Convert volume (0-63) to 6-bit pattern
   byte volumeBits = (byte)(volume & 0x3F);  // Mask to 6 bits
   
-  Serial.print("Setting volume to ");
-  Serial.print(volume);
-  Serial.print(" (0x");
-  Serial.print(volumeBits, HEX);
-  Serial.println(")");
   
   // Send 6-bit volume to Port B pins 0-5
   Wire.beginTransmission(MCP_VOLUME_ADDRESS);

@@ -67,16 +67,7 @@ void Display::updateScreen() {
   u8g2.drawStr(x, SCREEN_HEIGHT, "VOLUME");
   
 
-  //include an icon for the wifi access point / wifi_connected
-  if (_access_point == true) { 
-    u8g2.setFont(u8g2_font_open_iconic_www_1x_t);
-    u8g2.drawGlyph(124,62,0x48);
-  }
-
-  if (_wifi_state == true) {
-    u8g2.setFont(u8g2_font_open_iconic_embedded_1x_t);
-    u8g2.drawGlyph(124,62,0x50);
-  }
+  // WiFi icons removed
 
   //max brightness
   u8g2.setContrast(255);
@@ -88,73 +79,11 @@ void Display::updateScreen() {
   }
 }
 
-void Display::wifiScreen(const char* ssid) {
-  u8g2.clearBuffer();					// clear the internal memory
+// WiFi screen removed
 
-  u8g2.setFont(u8g2_font_open_iconic_www_2x_t);
-  u8g2.drawGlyph(120,19,0x48);
+// Firmware update screen removed
 
-  u8g2.setFont(u8g2_font_crox1h_tr);
-  String string = "Search for this WiFi network";
-  const char* str = string.c_str();
-  uint16_t x = 128 - (u8g2.getStrWidth(str) / 2);
-  uint16_t y = 45;
-  u8g2.drawStr(x, y, str);
-
-  //u8g2.setFont(u8g2_font_Born2bSportyV2_tr);
-  x = 128 - (u8g2.getStrWidth(ssid) / 2);
-  y = SCREEN_HEIGHT;
-  u8g2.drawStr(x, y, ssid);
-
-  u8g2.setContrast(255);
-  u8g2.sendBuffer();
-}
-
-void Display::firmwareUpdate(int val, int total) {
-  u8g2.clearBuffer();
-
-  u8g2.setFont(u8g2_font_crox2h_tr);
-  String string = "Updating firmware";
-  uint16_t x = 128 - (u8g2.getStrWidth(string.c_str()) / 2);
-  u8g2.drawStr(x, 14, string.c_str());
-
-  u8g2.drawFrame(80, 28, 96, 12);
-  if (val > 0) {
-    short w = round(((float)val / (float)total) * 96);
-    u8g2.drawBox(80, 28, w, 12);
-  }
-
-  u8g2.setFont(u8g2_font_crox1h_tr);
-  string = "Do not power off";
-  x = 128 - (u8g2.getStrWidth(string.c_str()) / 2);
-  u8g2.drawStr(x, SCREEN_HEIGHT - 5, string.c_str());
-
-  u8g2.setContrast(255);
-  u8g2.sendBuffer();
-}
-
-void Display::firmwareUpload(int val, int total) {
-  u8g2.clearBuffer();					// clear the internal memory
-
-  u8g2.setFont(u8g2_font_crox1h_tr);
-  String string = "Downloading Firmware";
-  uint16_t x = 128 - (u8g2.getStrWidth(string.c_str()) / 2);
-  u8g2.drawStr(x, 14, string.c_str());
-
-  u8g2.drawFrame(80, 28, 96, 12);
-  if (val > 0) {
-    short w = round(((float)val / (float)total) * 96);
-    u8g2.drawBox(80, 28, w, 12);
-  }
-
-  u8g2.setFont(u8g2_font_crox1h_tr);
-  string = "Do not power off";
-  x = 128 - (u8g2.getStrWidth(string.c_str()) / 2);
-  u8g2.drawStr(x, SCREEN_HEIGHT - 5, string.c_str());
-
-  u8g2.setContrast(255);
-  u8g2.sendBuffer();
-}
+// Firmware upload screen removed
 
 //called after the timeout elapses, drops screen brightness
 void Display::dimScreen() {
@@ -166,12 +95,4 @@ void Display::off() {
   u8g2.setPowerSave(1);
 }
 
-void Display::setAPMode(bool mode) {
-  _access_point = mode;
-  Display::updateScreen();
-}
-
-void Display::wifiConnected(bool state) {
-  _wifi_state = state;
-  Display::updateScreen();
-}
+// WiFi status functions removed

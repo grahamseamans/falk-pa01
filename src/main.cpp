@@ -1,11 +1,11 @@
 /*
-TO DO:
-* Update UI
-* All settings (UI)
-* Join local wifi instead of AP
+Simple Preamp Controller
+- Direct relay control
+- OLED display
+- Rotary encoders for input/volume
+- Serial flashing only
 */
 #include <Arduino.h>
-#include "ArduinoJson.h"
 #include <driver/gpio.h>
 #include <Wire.h>
 
@@ -20,8 +20,7 @@ InputController input;
 #include "relay-volume.h"
 VolumeController volume;
 
-#include "wifi-manager.h"
-WiFiManager wifi;
+// WiFi removed - simple preamp now
 
 // to handle mute state
 int muteButtonState;
@@ -31,110 +30,111 @@ int muteDebounceTime = 0;
 // track encoder state for delta detection
 int lastVolumeEncoderValue = 0;
 
-// wifi settings
-int wifiButtonPressTime = 0;
-uint8_t wifibuttonstate = HIGH;
+// WiFi removed
 
-void displayUpdateProgress(int progress, int total) {
-  display.firmwareUpdate(progress, total);
-}
+// OTA update removed - use serial flashing
 
-// Auto-update system removed - web files now embedded in firmware
-
-void setup(){	
-	Serial.begin(9600);
+void setup()
+{
+  Serial.begin(9600);
   Serial.setDebugOutput(true);
   Serial.println("Booting...");
 
-  //start the display controller
+  // start the display controller
   display.begin();
 
-  //setup the power control elements
-  pinMode(POWER_CONTROL, OUTPUT); //this is the power control for the 5V circuit
-  digitalWrite(POWER_CONTROL, HIGH); //set it high to power the 5V elements
-  pinMode(POWER_BUTTON, INPUT_PULLDOWN); //configure the power button
-  esp_sleep_enable_ext0_wakeup(POWER_BUTTON, 1); //let the power button wake the MCU
+  // setup the power control elements
+  pinMode(POWER_CONTROL, OUTPUT);                // this is the power control for the 5V circuit
+  digitalWrite(POWER_CONTROL, HIGH);             // set it high to power the 5V elements
+  pinMode(POWER_BUTTON, INPUT_PULLDOWN);         // configure the power button
+  esp_sleep_enable_ext0_wakeup(POWER_BUTTON, 1); // let the power button wake the MCU
 
   delay(250);
 
-  //configure the MCP27013 ICs
+  // configure the MCP27013 ICs
   input.begin(INP_MAX);
   volume.begin(VOL_MIN, VOL_MAX);
 
-  //turn everything off, this gives us a chance to correctly set the volume to the max startup volume, if set
+  // turn everything off, this gives us a chance to correctly set the volume to the max startup volume, if set
   input.set(0);
   delay(5);
 
   restoreSettings();
 
-  //add some default values if this is our first boot
-  if (sysSettings.saved == 0) {
+  // add some default values if this is our first boot
+  if (sysSettings.saved == 0)
+  {
     sysSettings.saved = 1;
-    for (int i = 0; i < INP_MAX; i++) {
-      sysSettings.inputs[i].name = "Input " + (String)(i+1);
+    for (int i = 0; i < INP_MAX; i++)
+    {
+      sysSettings.inputs[i].name = "Input " + (String)(i + 1);
     }
   }
 
-  if (sysSettings.volume > sysSettings.maxStartVol) {
+  if (sysSettings.volume > sysSettings.maxStartVol)
+  {
     sysSettings.volume = sysSettings.maxStartVol;
   }
 
-  //use the pullup resistors, this means we can connect ground to the encoders
-	ESP32Encoder::useInternalWeakPullResistors=UP;
+  // use the pullup resistors, this means we can connect ground to the encoders
+  ESP32Encoder::useInternalWeakPullResistors = UP;
 
-  //configure the input encoder
+  // configure the input encoder
   inpEnc.attachSingleEdge(INP_ENCODER_A, INP_ENCODER_B);
   inpEnc.setCount(sysSettings.input);
 
-  //configure the volume encoder
-	volEnc.attachFullQuad(VOL_ENCODER_A, VOL_ENCODER_B);
+  // configure the volume encoder
+  volEnc.attachFullQuad(VOL_ENCODER_A, VOL_ENCODER_B);
   lastVolumeEncoderValue = volEnc.getCount();
 
-  //configure the mute button
+  // configure the mute button
   pinMode(MUTE_BUTTON, INPUT);
 
-  //the relays *should* match our stored values (since they're latching) but we can't be sure
-  //so we set them to these values so the screen and relays match
-  //relays.set(sysSettings.volume);
+  // the relays *should* match our stored values (since they're latching) but we can't be sure
+  // so we set them to these values so the screen and relays match
+  // relays.set(sysSettings.volume);
   volume.set(sysSettings.volume);
   input.set(sysSettings.input);
 
-  //this is the input rotary encoder button. Needed to handle wifi enable
-  pinMode(WIFI_BUTTON, INPUT);
-
-  //update the display
+  // update the display
   display.updateScreen();
-
-  wifi.begin();
 }
 
-void muteLoop(int m) {
+void muteLoop(int m)
+{
   int reading = digitalRead(MUTE_BUTTON);
 
-  if (reading != lastmuteButtonState) {
+  if (reading != lastmuteButtonState)
+  {
     muteDebounceTime = m;
   }
 
-  if ((m - muteDebounceTime) > BUTTON_DEBOUNCE_DELAY) {
-    if (reading != muteButtonState) {
+  if ((m - muteDebounceTime) > BUTTON_DEBOUNCE_DELAY)
+  {
+    if (reading != muteButtonState)
+    {
       muteButtonState = reading;
 
-      if (muteButtonState == LOW) {
-        if (muteState == 0) {
+      if (muteButtonState == LOW)
+      {
+        if (muteState == 0)
+        {
           muteState = 1;
           volEnc.pauseCount();
-          //write to the screen
+          // write to the screen
           display.updateScreen();
-          wifi.sendEvent("mute", true);
-        } else {
+          // mute state changed
+        }
+        else
+        {
           muteState = 0;
           volEnc.resumeCount();
           lastVolumeEncoderValue = volEnc.getCount(); // Reset encoder tracking
-          //write to the screen
+          // write to the screen
           display.updateScreen();
-          //set the relays
+          // set the relays
           volume.set(sysSettings.volume);
-          wifi.sendEvent("mute", false);
+          // unmute state changed
         }
       }
     }
@@ -142,76 +142,71 @@ void muteLoop(int m) {
   lastmuteButtonState = reading;
 }
 
-void wifiLoop(int m) {
-  int reading = digitalRead(WIFI_BUTTON);
-  if (reading != wifibuttonstate) {
-    if (reading == LOW) {
-      wifiButtonPressTime = m;
-    } else {
-      wifiButtonPressTime = 0;
-    }
-    wifibuttonstate = reading;
-  } else if ((reading == LOW) && (wifiButtonPressTime > 0) && (m > wifiButtonPressTime + BUTTON_LONG_PRESS)) {
-    //bool success = wifi.enableAP();
-    wifi.enableAP();
-    wifiButtonPressTime = 0;
-  }
-  wifi.loop();
-}
+// WiFi loop removed
 
-
-void setVolume(int newVol) {
+void setVolume(int newVol)
+{
   // Constrain to hardware limits
-  if (newVol < VOL_MIN) newVol = VOL_MIN;
-  if (newVol > VOL_MAX) newVol = VOL_MAX;
-  
+  if (newVol < VOL_MIN)
+    newVol = VOL_MIN;
+  if (newVol > VOL_MAX)
+    newVol = VOL_MAX;
+
   Serial.print("setVolume: Setting to ");
   Serial.println(newVol);
-  
+
   // Update the single source of truth
   sysSettings.volume = newVol;
-  
+
   // Update all outputs
-  volume.set(newVol);                    // Hardware relays
-  display.updateScreen();                // OLED display
-  wifi.sendEvent("volume", newVol);      // Web interface sync
-  
+  volume.set(newVol);               // Hardware relays
+  display.updateScreen();           // OLED display
+
   // Trigger delayed flash commit
   FlashCommit = millis();
 }
 
-void inputLoop(int m) {
-  int count = inpEnc.getCount(); //get count from rotary encoder
-  if (count != sysSettings.input) { //if it's not our current setting
-    if (count > INP_MAX) { //make sure it's not out of bounds (upper, if so, set to min)
+void inputLoop(int m)
+{
+  int count = inpEnc.getCount(); // get count from rotary encoder
+  if (count != sysSettings.input)
+  { // if it's not our current setting
+    if (count > INP_MAX)
+    { // make sure it's not out of bounds (upper, if so, set to min)
       count = INP_MIN;
-    } else if (count < INP_MIN) { //make sure it's not out of bounds (lower, if so, set to max)
+    }
+    else if (count < INP_MIN)
+    { // make sure it's not out of bounds (lower, if so, set to max)
       count = INP_MAX;
     }
-    while (sysSettings.inputs[count - 1].enabled == false) { //is the input enabled? If not...
-      count++; //check the next one
-      if (count > INP_MAX) { //are we out of bounds? go to the min
+    while (sysSettings.inputs[count - 1].enabled == false)
+    {          // is the input enabled? If not...
+      count++; // check the next one
+      if (count > INP_MAX)
+      { // are we out of bounds? go to the min
         count = INP_MIN;
       }
     }
-    inpEnc.setCount(count); //set the encoder (failsafe)
-    input.set(count); //set the input
-    sysSettings.input = count; //update system settings
-    display.updateScreen(); //paint the screen
-    //set a delayed commit (this prevents us from wearing out the flash with each detent)
-    wifi.sendEvent("input", count);
+    inpEnc.setCount(count);    // set the encoder (failsafe)
+    input.set(count);          // set the input
+    sysSettings.input = count; // update system settings
+    display.updateScreen();    // paint the screen
+    // set a delayed commit (this prevents us from wearing out the flash with each detent)
     FlashCommit = m;
   }
   input.loop();
 }
 
-void volumeLoop(int m) {
-  if (muteState == 0) {
+void volumeLoop(int m)
+{
+  if (muteState == 0)
+  {
     // Check for encoder movement
     int currentEncoderValue = volEnc.getCount();
     int delta = currentEncoderValue - lastVolumeEncoderValue;
-    
-    if (delta != 0) {
+
+    if (delta != 0)
+    {
       // Encoder moved, update volume by the delta
       setVolume(sysSettings.volume + delta);
       lastVolumeEncoderValue = currentEncoderValue;
@@ -223,19 +218,24 @@ void volumeLoop(int m) {
 int lastPowerButtonState = LOW;
 int powerButtonState = LOW;
 int powerDebounceTime = 0;
-void powerLoop(int m) {
+void powerLoop(int m)
+{
   int reading = digitalRead(POWER_BUTTON);
 
-  if (reading != lastPowerButtonState) {
+  if (reading != lastPowerButtonState)
+  {
     powerDebounceTime = m;
   }
 
-  if ((m - powerDebounceTime) > BUTTON_DEBOUNCE_DELAY) {
-    if (reading != powerButtonState) {
+  if ((m - powerDebounceTime) > BUTTON_DEBOUNCE_DELAY)
+  {
+    if (reading != powerButtonState)
+    {
       powerButtonState = reading;
 
-      if (powerButtonState == HIGH) {
-        //need to power down...
+      if (powerButtonState == HIGH)
+      {
+        // need to power down...
         Serial.println("Going into sleep mode...");
 
         // power off the 5V circuit
@@ -252,16 +252,18 @@ void powerLoop(int m) {
   lastPowerButtonState = reading;
 }
 
-void loop() {
+void loop()
+{
   int m = millis();
 
   inputLoop(m);
   volumeLoop(m);
   muteLoop(m);
-  wifiLoop(m);
+  // WiFi removed
   powerLoop(m);
 
-  if ((FlashCommit > 0) && (m > FlashCommit + COMMIT_TIMEOUT)) {
+  if ((FlashCommit > 0) && (m > FlashCommit + COMMIT_TIMEOUT))
+  {
     saveSettings();
     FlashCommit = 0;
   }

@@ -19,34 +19,22 @@ ESP32Encoder volEnc;
 ESP32Encoder inpEnc;
 
 void saveSettings() {
-  // create a JSON object for the response
-  StaticJsonDocument<800> doc;
-  JsonObject settings = doc.to<JsonObject>();
-
-  settings["volume"] = sysSettings.volume;
-  settings["input"] = sysSettings.input;
-  JsonArray settings_inputs = settings.createNestedArray("inputs");
+  // Save settings using Preferences API directly
+  preferences.putUShort("volume", sysSettings.volume);
+  preferences.putUShort("input", sysSettings.input);
+  preferences.putUShort("saved", sysSettings.saved);
+  preferences.putBool("dim", sysSettings.dim);
+  preferences.putUShort("maxVol", sysSettings.maxVol);
+  preferences.putUShort("maxStartVol", sysSettings.maxStartVol);
+  preferences.putBool("absoluteVol", sysSettings.absoluteVol);
+  
+  // Save inputs
   for (int i = 0; i < INP_MAX; i++) {
-    JsonObject io = settings_inputs.createNestedObject();
-    io["name"] = sysSettings.inputs[i].name;
-    io["icon"] = sysSettings.inputs[i].icon;
-    io["enabled"] = sysSettings.inputs[i].enabled;
+    String key = "inp" + String(i);
+    preferences.putString((key + "_name").c_str(), sysSettings.inputs[i].name);
+    preferences.putString((key + "_icon").c_str(), sysSettings.inputs[i].icon);
+    preferences.putBool((key + "_en").c_str(), sysSettings.inputs[i].enabled);
   }
-  settings["saved"] = sysSettings.saved;
-  settings["dim"] = sysSettings.dim;
-  settings["maxVol"] = sysSettings.maxVol;
-  settings["maxStartVol"] = sysSettings.maxStartVol;
-  settings["absoluteVol"] = sysSettings.absoluteVol;
-  settings["ssid"] = sysSettings.ssid;
-  settings["pass"] = sysSettings.pass;
-  settings["hostname"] = sysSettings.hostname;  
-
-  //generate the string
-  String retStr;
-  serializeJson(settings, retStr);
-
-  //write the settings
-  preferences.putString("settingsString", retStr);
 }
 
 void restoreSettings() {
@@ -54,31 +42,20 @@ void restoreSettings() {
   preferences.begin("falk-pre", false);
   //preferences.clear();
 
-  String str = preferences.getString("settingsString");
-  if (str=="") {
-    return;
-  }
-  StaticJsonDocument<800> doc;
-  DeserializationError error = deserializeJson(doc, str);
-  JsonObject settings = doc.as<JsonObject>();
-
-  if (error) {
-    Serial.println("Failed to open settings");
-    return;
-  }
-  sysSettings.volume = settings["volume"];
-  sysSettings.input = settings["input"];
+  // Load settings using Preferences API directly
+  sysSettings.volume = preferences.getUShort("volume", 26);
+  sysSettings.input = preferences.getUShort("input", 1);
+  sysSettings.saved = preferences.getUShort("saved", 0);
+  sysSettings.dim = preferences.getBool("dim", true);
+  sysSettings.maxVol = preferences.getUShort("maxVol", VOL_MAX);
+  sysSettings.maxStartVol = preferences.getUShort("maxStartVol", VOL_MAX);
+  sysSettings.absoluteVol = preferences.getBool("absoluteVol", false);
+  
+  // Load inputs
   for(int i=0; i<INP_MAX; i++) {
-    sysSettings.inputs[i].enabled = settings["inputs"][i]["enabled"];
-    sysSettings.inputs[i].name = settings["inputs"][i]["name"].as<String>();
-    sysSettings.inputs[i].icon = settings["inputs"][i]["icon"].as<String>();
+    String key = "inp" + String(i);
+    sysSettings.inputs[i].name = preferences.getString((key + "_name").c_str(), "Input " + String(i + 1));
+    sysSettings.inputs[i].icon = preferences.getString((key + "_icon").c_str(), "disc");
+    sysSettings.inputs[i].enabled = preferences.getBool((key + "_en").c_str(), true);
   }
-  sysSettings.saved = settings["saved"];
-  sysSettings.dim = settings["dim"];
-  sysSettings.maxVol = settings["maxVol"];
-  sysSettings.maxStartVol = settings["maxStartVol"];
-  sysSettings.absoluteVol = settings["absoluteVol"];
-  sysSettings.ssid = settings["ssid"].as<String>();
-  sysSettings.pass = settings["pass"].as<String>();
-  sysSettings.hostname = settings["hostname"].as<String>();
 }

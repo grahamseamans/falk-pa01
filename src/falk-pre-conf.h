@@ -2,7 +2,6 @@
 #define INITIAL_SETUP
 
 #include "Arduino.h"
-#include "ArduinoJson.h"
 #include <Preferences.h>
 
 // ====== MINIMUM AND MAXIMUM VOLUME ====== //
@@ -22,7 +21,6 @@
 // ====== BUTTON SETTINGS ====== //
 
 #define BUTTON_DEBOUNCE_DELAY   50
-#define BUTTON_LONG_PRESS       2000
 
 // ====== FLASH WEAR OUT PREVENTION ====== //
 
@@ -30,7 +28,7 @@
 
 // ====== DEFINE PINS ====== //
 
-#define WIFI_BUTTON             34  // Swapped: now using volume button for WiFi
+// WiFi button removed
 
 #define SCREEN_CS               5
 #define SCREEN_DC               15
@@ -63,9 +61,7 @@ typedef struct {
   int maxVol = VOL_MAX;
   int maxStartVol = VOL_MAX;
   short absoluteVol = 0;
-  String ssid = "";
-  String pass = "";
-  String hostname = "falk-pa01";
+  // WiFi settings removed
 } DeviceSettings;
 
 extern DeviceSettings sysSettings;
