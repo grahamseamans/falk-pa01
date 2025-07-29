@@ -33,7 +33,7 @@ void Display::loop() {
 //function that puts the input and volume on the screen
 void Display::updateScreen() {
   char volume [5];
-  if ((muteState == 0) && sysSettings.volume > 0) {
+  if ((sysSettings.muted == 0) && sysSettings.volume > 0) {
     uint16_t v;
     if (sysSettings.absoluteVol == false) {
       v = round(((float)sysSettings.volume / (float)VOL_MAX) * 100);
@@ -95,4 +95,42 @@ void Display::off() {
   u8g2.setPowerSave(1);
 }
 
-// WiFi status functions removed
+void Display::irProgMode(const char* message) {
+  u8g2.clearBuffer();
+
+  u8g2.setFont(u8g2_font_crox2h_tr);
+  String title = "IR PROGRAMMING";
+  uint16_t x = 128 - (u8g2.getStrWidth(title.c_str()) / 2);
+  u8g2.drawStr(x, 18, title.c_str());
+
+  u8g2.setFont(u8g2_font_crox1h_tr);
+  x = 128 - (u8g2.getStrWidth(message) / 2);
+  u8g2.drawStr(x, 35, message);
+
+  String exit = "Press VOL button to exit";
+  x = 128 - (u8g2.getStrWidth(exit.c_str()) / 2);
+  u8g2.drawStr(x, 55, exit.c_str());
+
+  u8g2.setContrast(255);
+  u8g2.sendBuffer();
+}
+
+void Display::irProgComplete() {
+  u8g2.clearBuffer();
+
+  u8g2.setFont(u8g2_font_crox2h_tr);
+  String title = "IR COMPLETE";
+  uint16_t x = 128 - (u8g2.getStrWidth(title.c_str()) / 2);
+  u8g2.drawStr(x, 25, title.c_str());
+
+  u8g2.setFont(u8g2_font_crox1h_tr);
+  String message = "Remote programmed!";
+  x = 128 - (u8g2.getStrWidth(message.c_str()) / 2);
+  u8g2.drawStr(x, 45, message.c_str());
+
+  u8g2.setContrast(255);
+  u8g2.sendBuffer();
+  
+  delay(2000); // Show completion message for 2 seconds
+  updateScreen(); // Return to normal display
+}

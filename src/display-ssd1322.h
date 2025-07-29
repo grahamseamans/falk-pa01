@@ -9,6 +9,8 @@ class Display {
     void dimScreen();
     void off();
     void setDisplay(bool);
+    void irProgMode(const char* message);
+    void irProgComplete();
 };
 
 #endif

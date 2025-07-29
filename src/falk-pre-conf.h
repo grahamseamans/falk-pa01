@@ -24,7 +24,7 @@
 
 // ====== FLASH WEAR OUT PREVENTION ====== //
 
-#define COMMIT_TIMEOUT          400
+#define COMMIT_TIMEOUT          3000
 
 // ====== DEFINE PINS ====== //
 
@@ -34,16 +34,20 @@
 #define SCREEN_DC               15
 #define SCREEN_RST              13
 
-#define MUTE_BUTTON             35  // Swapped: INPUT button for mute (broken but won't be used)
+#define MUTE_BUTTON             34  // Input button - used for mute and IR programming
 
-#define INP_ENCODER_A           14
-#define INP_ENCODER_B           27
+// Broken hardware (not used)
+#define INP_ENCODER_A           14  // Broken
+#define INP_ENCODER_B           27  // Broken
 
-#define VOL_ENCODER_A           26
-#define VOL_ENCODER_B           25
+// Working hardware (input encoder used for volume)
+#define VOL_ENCODER_A           26  // Input encoder A - used for volume  
+#define VOL_ENCODER_B           25  // Input encoder B - used for volume
 
 #define POWER_BUTTON            GPIO_NUM_33
 #define POWER_CONTROL           GPIO_NUM_32
+
+#define IR_RECEIVER_PIN         12
 
 // ====== SETTINGS (INCL. DEFAULTS) ====== //
 typedef struct {
@@ -61,7 +65,13 @@ typedef struct {
   int maxVol = VOL_MAX;
   int maxStartVol = VOL_MAX;
   short absoluteVol = 0;
-  // WiFi settings removed
+  int muted = 0;
+  // IR remote codes
+  uint32_t irVolUp = 0;
+  uint32_t irVolDown = 0;
+  uint32_t irInputUp = 0;
+  uint32_t irInputDown = 0;
+  uint32_t irRepeat = 0;
 } DeviceSettings;
 
 extern DeviceSettings sysSettings;
@@ -74,7 +84,6 @@ extern String fw_version;
 #include "display-ssd1322.h"
 extern Display display;
 
-extern int muteState;
 
 #include "ESP32Encoder.h"
 // for the volume rotary encoder
@@ -85,5 +94,5 @@ extern ESP32Encoder inpEnc;
 
 void saveSettings();
 void restoreSettings();
-void setVolume(int newVol);
+void applySettingsChanges(const DeviceSettings& oldSettings, const DeviceSettings& newSettings);
 #endif
