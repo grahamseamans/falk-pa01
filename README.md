@@ -1,4 +1,12 @@
-## FALK PA-01 Advanced Control Board
+## Open-Pre ESP32 Preamp Controller
+
+ESP32-based preamp controller with web interface, adapted from [FALK PA-01 Advanced](https://github.com/gilphilbert/falk-pa01-advanced) by gilphilbert.
+
+### RelaiXed Passive Modifications
+This version has been adapted for RelaiXed Passive 6-bit attenuator control:
+- 6-bit volume control via I2C (GPB0-GPB5)
+- WiFi button moved from INPUT to VOLUME button
+- I2C addressing updated for RelaiXed Passive hardware
 
 ### Build
 - Install [Visual Studio Code](https://code.visualstudio.com/download) and open
@@ -16,7 +24,8 @@ Note: PlatformIO [can have issues on MacOS](https://github.com/gilphilbert/falk-
 
 ### Installation
 Assuming those both complete, you're ready to flash the firmware
-- Connect the Ground, TX and RX connectors on the advanced board to a serial adapter
+- Connect the Ground, TX and RX connectors on the ESP32 board to a serial adapter
+- **IMPORTANT**: Cross the connections - ESP32 TX goes to adapter RX, ESP32 RX goes to adapter TX
 - Connect the serial adapter to your development machine
 - Power up the Advanced Control Board
 - While holding down the BOOT button, press the RESET button
