@@ -27,7 +27,6 @@ typedef struct {
 
 // ====== GLOBAL STATE VARIABLES ====== //
 extern DeviceSettings sysSettings;
-extern int FlashCommit;
 
 // ====== STATE SAVE/RESTORE FUNCTIONS ====== //
 void initPreferences();

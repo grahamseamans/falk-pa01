@@ -17,6 +17,8 @@
 // NOTE: for the Adafruit HUZZAH32, use the *labelled pins*, not the standard ones for the ESP32
 U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI u8g2(U8G2_R2, SCREEN_CS, SCREEN_DC, SCREEN_RST);
 uint32_t screenTimer = 0;
+bool screenDimmed = false;
+bool screenOff = false;
 
 #define SCREEN_HEIGHT 64
 #define SCREEN_WIDTH 256
@@ -27,8 +29,19 @@ void Display::begin() {
 }
 
 void Display::loop() {
-  if ((screenTimer > 0) && (millis() > screenTimer + DISPLAY_DIM_TIMEOUT)) {
+  uint32_t currentTime = millis();
+  
+  // Check for screen dimming after DISPLAY_DIM_TIMEOUT
+  if ((screenTimer > 0) && !screenDimmed && (currentTime > screenTimer + DISPLAY_DIM_TIMEOUT)) {
     Display::dimScreen();
+    screenDimmed = true;
+  }
+  
+  // Check for complete screen off after DISPLAY_OFF_TIMEOUT
+  if ((screenTimer > 0) && !screenOff && (currentTime > screenTimer + DISPLAY_OFF_TIMEOUT)) {
+    u8g2.setPowerSave(1);  // Turn screen completely off
+    screenOff = true;
+    Serial.println("DISPLAY: Screen turned off after timeout");
   }
 }
 
@@ -76,9 +89,22 @@ void Display::updateScreen() {
   u8g2.setContrast(255);
   //write data to screen
   u8g2.sendBuffer();
-  //dim the display after timeout
+  // Reset display timers and wake up screen if needed
   if (DISPLAY_DIM_ENABLED) {
     screenTimer = millis();
+    
+    // Wake up screen if it was off
+    if (screenOff) {
+      u8g2.setPowerSave(0);  // Turn screen back on
+      screenOff = false;
+      Serial.println("DISPLAY: Screen woken up");
+    }
+    
+    // Reset dim state and restore brightness
+    if (screenDimmed) {
+      u8g2.setContrast(255);  // Restore full brightness
+      screenDimmed = false;
+    }
   }
 }
 
@@ -91,7 +117,7 @@ void Display::updateScreen() {
 //called after the timeout elapses, drops screen brightness
 void Display::dimScreen() {
   u8g2.setContrast(1);
-  screenTimer = 0;
+  Serial.println("DISPLAY: Screen dimmed");
 }
 
 void Display::off() {

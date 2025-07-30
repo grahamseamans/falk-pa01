@@ -72,6 +72,9 @@ int volumeButtonState = HIGH;
 // Track last IR code for repeat handling
 uint32_t lastIRCode = 0;
 
+// Global timing for debouncing and flash saves
+int lastChangeTime = 0;
+
 // Function to find most frequent code in the repeat history
 uint32_t findMostFrequentCode(uint32_t* codes, int count) {
   uint32_t mostFrequent = 0;
@@ -126,14 +129,24 @@ void setup()
   initPreferences();
   restoreSettings();
 
-  // use the pullup resistors, this means we can connect ground to the encoders
-  ESP32Encoder::useInternalWeakPullResistors = UP;
+  // ESP32Encoder library bug workaround: useInternalWeakPullResistors doesn't work
+  // So we disable library pullups and set them manually after attach
+  Serial.println("SETUP: Disabling library pullups (workaround for ESP32Encoder bug)");
+  ESP32Encoder::useInternalWeakPullResistors = NONE;
 
   // input encoder is broken - not configured
 
   // configure the volume encoder (actually input encoder hardware)
+  Serial.println("SETUP: Attaching volume encoder in full-quad mode (original working mode)");
   volEnc.attachFullQuad(VOL_ENCODER_A, VOL_ENCODER_B);
+  
+  // Manual pullup workaround - set after attach to override library settings
+  Serial.println("SETUP: Manually enabling pullups on encoder pins");
+  pinMode(VOL_ENCODER_A, INPUT_PULLUP);
+  pinMode(VOL_ENCODER_B, INPUT_PULLUP);
+  
   lastVolumeEncoderValue = volEnc.getCount();
+  Serial.printf("SETUP: Initial encoder count: %d\n", lastVolumeEncoderValue);
 
   // configure the mute button
   pinMode(MUTE_BUTTON, INPUT);
@@ -371,7 +384,7 @@ void powerLoop(int m)
     powerDebounceTime = m;
   }
 
-  if ((m - powerDebounceTime) > BUTTON_DEBOUNCE_DELAY)
+  if ((m - powerDebounceTime) > DEBOUNCE_DELAY)
   {
     if (reading != powerButtonState)
     {
@@ -475,14 +488,14 @@ void loop()
   
   // Trigger flash save if any persistent setting changed
   if (needsFlashSave) {
-    FlashCommit = m;
+    lastChangeTime = m;
   }
 
   // Handle delayed flash saves
-  if ((FlashCommit > 0) && (m > FlashCommit + AUTO_SAVE_DELAY))
+  if ((lastChangeTime > 0) && (m > lastChangeTime + AUTO_SAVE_DELAY))
   {
     saveSettings();
-    FlashCommit = 0;
+    lastChangeTime = 0;
   }
 
   display.loop();

@@ -2,7 +2,6 @@
 
 // ====== GLOBAL STATE VARIABLES ====== //
 DeviceSettings sysSettings;
-int FlashCommit = 0;
 Preferences preferences;
 
 // ====== DEBUGGING SEQUENCE TRACKING ====== //
