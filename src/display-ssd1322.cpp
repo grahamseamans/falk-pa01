@@ -1,6 +1,8 @@
 #include "display-ssd1322.h"
 
-#include "falk-pre-conf.h"
+#include "config.h"
+#include "hardware-config.h"
+#include "realtime-state.h"
 
 // THIS BLOCK NEEDED FOR THE DISPLAY
 #include <SPI.h>
@@ -25,7 +27,7 @@ void Display::begin() {
 }
 
 void Display::loop() {
-  if ((screenTimer > 0) && (millis() > screenTimer + SCREEN_TIMEOUT)) {
+  if ((screenTimer > 0) && (millis() > screenTimer + DISPLAY_DIM_TIMEOUT)) {
     Display::dimScreen();
   }
 }
@@ -35,7 +37,7 @@ void Display::updateScreen() {
   char volume [5];
   if ((sysSettings.muted == 0) && sysSettings.volume > 0) {
     uint16_t v;
-    if (sysSettings.absoluteVol == false) {
+    if (DISPLAY_ABSOLUTE == false) {
       v = round(((float)sysSettings.volume / (float)VOL_MAX) * 100);
       itoa(v, volume, 10);
       strcat(volume, "%");
@@ -58,7 +60,8 @@ void Display::updateScreen() {
   //left starting position for the volume (so it's right-aligned)
   uint16_t x = SCREEN_WIDTH - u8g2.getStrWidth(volume);
 
-  u8g2.drawStr(0, y, sysSettings.inputs[sysSettings.input - 1].name.c_str());
+  const char* inputNames[] = INPUT_NAMES;
+  u8g2.drawStr(0, y, inputNames[sysSettings.input - 1]);
   u8g2.drawStr(x, y, volume);
 
   u8g2.setFont(u8g2_font_crox1h_tr);
@@ -73,8 +76,8 @@ void Display::updateScreen() {
   u8g2.setContrast(255);
   //write data to screen
   u8g2.sendBuffer();
-  //dim the display in 10s
-  if (sysSettings.dim == 1) {
+  //dim the display after timeout
+  if (DISPLAY_DIM_ENABLED) {
     screenTimer = millis();
   }
 }

@@ -15,14 +15,23 @@ Simple Preamp Controller
 
 // OTHER INTERNAL CLASSES
 
-// OUR SYSTEM CONFIGURATION
-#include "falk-pre-conf.h"
+// SYSTEM CONFIGURATION
+#include "config.h"
+#include "hardware-config.h"
+#include "realtime-state.h"
 
 #include "relay-input.h"
 InputController input;
 
 #include "relay-volume.h"
 VolumeController volume;
+
+#include "display-ssd1322.h"
+Display display;
+
+#include "ESP32Encoder.h"
+ESP32Encoder volEnc;  // for the volume rotary encoder
+ESP32Encoder inpEnc;  // for the input rotary encoder (broken)
 
 // WiFi removed - simple preamp now
 
@@ -50,14 +59,15 @@ enum IRProgState {
 };
 IRProgState irProgState = IR_NORMAL;
 unsigned long irProgTimeout = 0;
-uint32_t repeatCodeHistory[20];
+#define IR_REPEAT_SAMPLES 20
+uint32_t repeatCodeHistory[IR_REPEAT_SAMPLES];
 int repeatCodeCount = 0;
 
 // Volume button long press detection
 unsigned long volumeButtonPressTime = 0;
 int lastVolumeButtonState = HIGH;
 int volumeButtonState = HIGH;
-#define VOLUME_BUTTON_LONG_PRESS 2000
+// Button timing moved to config.h
 
 // Track last IR code for repeat handling
 uint32_t lastIRCode = 0;
@@ -90,7 +100,7 @@ uint32_t findMostFrequentCode(uint32_t* codes, int count) {
 
 void setup()
 {
-  Serial.begin(9600);
+  Serial.begin(115200);
   Serial.setDebugOutput(true);
   Serial.println("Booting...");
 
@@ -113,22 +123,8 @@ void setup()
   input.set(0);
   delay(5);
 
+  initPreferences();
   restoreSettings();
-
-  // add some default values if this is our first boot
-  if (sysSettings.saved == 0)
-  {
-    sysSettings.saved = 1;
-    for (int i = 0; i < INP_MAX; i++)
-    {
-      sysSettings.inputs[i].name = "Input " + (String)(i + 1);
-    }
-  }
-
-  if (sysSettings.volume > sysSettings.maxStartVol)
-  {
-    sysSettings.volume = sysSettings.maxStartVol;
-  }
 
   // use the pullup resistors, this means we can connect ground to the encoders
   ESP32Encoder::useInternalWeakPullResistors = UP;
@@ -174,7 +170,7 @@ void muteLoop(int m, DeviceSettings* settings)
           irProgState = IR_NORMAL;
           Serial.println("Exiting IR programming mode");
           // Display update will be handled by applySettingsChanges
-        } else if (pressDuration < VOLUME_BUTTON_LONG_PRESS) {
+        } else if (pressDuration < BUTTON_LONG_PRESS_TIME) {
           // Short press - toggle mute (only if we didn't already enter IR programming)
           settings->muted = !settings->muted;
           if (!settings->muted) {
@@ -192,10 +188,10 @@ void muteLoop(int m, DeviceSettings* settings)
   // Check for long press while button is still held down
   if (reading == LOW && volumeButtonPressTime > 0 && irProgState == IR_NORMAL) {
     unsigned long pressDuration = m - volumeButtonPressTime;
-    if (pressDuration >= VOLUME_BUTTON_LONG_PRESS) {
+    if (pressDuration >= BUTTON_LONG_PRESS_TIME) {
       // Long press detected while holding - enter IR programming mode
       irProgState = IR_PROG_VOL_UP;
-      irProgTimeout = m + 30000; // 30 second timeout
+      irProgTimeout = m + IR_PROGRAMMING_TIMEOUT;
       Serial.println("Entering IR programming mode");
       display.irProgMode("Press VOL UP on remote");
       volumeButtonPressTime = 0; // Prevent retriggering
@@ -260,14 +256,14 @@ void irLoop(int m, DeviceSettings* settings) {
             
           case IR_PROG_REPEAT:
             // Collect codes for histogram analysis
-            if (repeatCodeCount < 20) {
+            if (repeatCodeCount < IR_REPEAT_SAMPLES) {
               repeatCodeHistory[repeatCodeCount] = code;
               repeatCodeCount++;
-              Serial.printf("Collected code %d/20: 0x%08X\n", repeatCodeCount, code);
+              Serial.printf("Collected code %d/%d: 0x%08X\n", repeatCodeCount, IR_REPEAT_SAMPLES, code);
               
-              if (repeatCodeCount == 20) {
-                // We have 20 codes, find the most frequent one
-                settings->irRepeat = findMostFrequentCode(repeatCodeHistory, 20);
+              if (repeatCodeCount == IR_REPEAT_SAMPLES) {
+                // We have enough codes, find the most frequent one
+                settings->irRepeat = findMostFrequentCode(repeatCodeHistory, IR_REPEAT_SAMPLES);
                 irProgState = IR_NORMAL;
                 saveSettings();
                 display.irProgComplete();
@@ -276,7 +272,7 @@ void irLoop(int m, DeviceSettings* settings) {
               } else {
                 // Update display with progress
                 char progressMsg[50];
-                sprintf(progressMsg, "Collecting codes: %d/20", repeatCodeCount);
+                sprintf(progressMsg, "Collecting codes: %d/%d", repeatCodeCount, IR_REPEAT_SAMPLES);
                 display.irProgMode(progressMsg);
               }
             }
@@ -313,34 +309,18 @@ void irLoop(int m, DeviceSettings* settings) {
         lastIRCode = code;
       } else if (code == settings->irInputUp && code != 0) {
         int newInput = settings->input + 1;
-        // Stop at maximum, don't wrap around
         if (newInput <= INP_MAX) {
-          while (newInput <= INP_MAX && settings->inputs[newInput - 1].enabled == false) {
-            newInput++;
-          }
-          if (newInput <= INP_MAX) {
-            settings->input = newInput;
-            Serial.printf("IR: Input up to %d\n", newInput);
-          } else {
-            Serial.println("IR: Input up - already at maximum enabled input");
-          }
+          settings->input = newInput;
+          Serial.printf("IR: Input up to %d\n", newInput);
         } else {
           Serial.println("IR: Input up - already at maximum input");
         }
         lastIRCode = code;
       } else if (code == settings->irInputDown && code != 0) {
         int newInput = settings->input - 1;
-        // Stop at minimum, don't wrap around
         if (newInput >= INP_MIN) {
-          while (newInput >= INP_MIN && settings->inputs[newInput - 1].enabled == false) {
-            newInput--;
-          }
-          if (newInput >= INP_MIN) {
-            settings->input = newInput;
-            Serial.printf("IR: Input down to %d\n", newInput);
-          } else {
-            Serial.println("IR: Input down - already at minimum enabled input");
-          }
+          settings->input = newInput;
+          Serial.printf("IR: Input down to %d\n", newInput);
         } else {
           Serial.println("IR: Input down - already at minimum input");
         }
@@ -430,11 +410,76 @@ void loop()
   irProgLoop(m);
   powerLoop(m);
 
-  // Apply any changes to hardware/display/flash
-  applySettingsChanges(oldSettings, sysSettings);
+  // Apply any changes to hardware/display/flash inline
+  bool needsFlashSave = false;
+  bool needsDisplayUpdate = false;
+  
+  // Check for volume changes
+  if (oldSettings.volume != sysSettings.volume) {
+    // Implement break-before-make relay switching to prevent pops
+    byte oldBits = (byte)(oldSettings.volume & 0x3F);
+    byte newBits = (byte)(sysSettings.volume & 0x3F);
+    
+    // Calculate which bits are changing
+    byte bitsToTurnOff = oldBits & ~newBits;  // Was 1, becoming 0
+    
+    // Step 1: Turn off bits that need to turn off (break)
+    if (bitsToTurnOff != 0) {
+      volume.writeBits(oldBits & ~bitsToTurnOff);  // Remove bits turning off
+      delay(5);  // Brief delay to let relays settle
+    }
+    
+    byte bitsToTurnOn = ~oldBits & newBits;   // Was 0, becoming 1
+    
+    // Step 2: Turn on bits that need to turn on (make)
+    if (bitsToTurnOn != 0) {
+      volume.writeBits(newBits);  // Write final target pattern
+    }
+    
+    // Step 3: Final sync to prevent drift
+    volume.set(sysSettings.volume);
+    
+    needsDisplayUpdate = true;
+    needsFlashSave = true;
+    Serial.printf("Volume changed: %d->%d (0x%02X->0x%02X)\n", 
+                  oldSettings.volume, sysSettings.volume, oldBits, newBits);
+  }
+  
+  // Check for input changes  
+  if (oldSettings.input != sysSettings.input) {
+    input.set(sysSettings.input);
+    needsDisplayUpdate = true;
+    needsFlashSave = true;
+    Serial.printf("Input changed to: %d\n", sysSettings.input);
+  }
+  
+  // Check for mute state changes
+  if (oldSettings.muted != sysSettings.muted) {
+    if (sysSettings.muted) {
+      volEnc.pauseCount();
+      volume.writeBits(0x00);  // Mute by turning off all volume relays
+      Serial.println("Muted");
+    } else {
+      volEnc.resumeCount();
+      volume.writeBits(sysSettings.volume & 0x3F);  // Restore actual volume
+      Serial.println("Unmuted");
+    }
+    needsDisplayUpdate = true;
+    needsFlashSave = true;  // Save mute state
+  }
+  
+  // Update display if anything changed that affects it
+  if (needsDisplayUpdate) {
+    display.updateScreen();
+  }
+  
+  // Trigger flash save if any persistent setting changed
+  if (needsFlashSave) {
+    FlashCommit = m;
+  }
 
   // Handle delayed flash saves
-  if ((FlashCommit > 0) && (m > FlashCommit + COMMIT_TIMEOUT))
+  if ((FlashCommit > 0) && (m > FlashCommit + AUTO_SAVE_DELAY))
   {
     saveSettings();
     FlashCommit = 0;
